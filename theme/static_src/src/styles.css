@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/**
+  * Paths scanned by Tailwind for class names. Listed explicitly rather than as a
+  * catch-all from the project root so the scan doesn't walk venv/ and node_modules/.
+  */
+@source "../../../templates/**/*.html";
+@source "../../../accounts/**/*.{html,py}";
+@source "../../../profiles/**/*.{html,py}";
+@source "../../../predictions/**/*.{html,py}";
+@source "../../../roadmap/**/*.{html,py}";
+@source "../../../progress/**/*.{html,py}";
