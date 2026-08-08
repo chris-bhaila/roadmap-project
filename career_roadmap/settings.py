@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'predictions',
     'roadmap',
     'progress',
+    'admin_panel',
 ]
 
 MIDDLEWARE = [

@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Skills &amp; Projects{% endblock %}
+
+{% block navbar %}
+<header class="w-full bg-white border-b border-[#C7C4D8]/30 h-14 flex items-center">
+  <div class="max-w-[1440px] w-full mx-auto px-4 flex items-center gap-3">
+    <a href="{% url 'profiles:upload' %}" aria-label="Go back" class="text-[#464555] hover:bg-[#F0F3FF] transition-colors p-1.5 rounded-full active:scale-95 duration-150 flex items-center justify-center cursor-pointer">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <div class="flex items-center gap-2 text-[#3525CD]">
+      <span class="material-symbols-outlined text-[22px]">school</span>
+      <span class="font-bold text-base tracking-tight rp-font">Internship Readiness</span>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+
+  .rp-slide-down-enter {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  .rp-slide-down-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  .rp-chip-enter {
+    animation: rp-chip-in 200ms ease-out;
+  }
+  @keyframes rp-chip-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rp-slide-down-enter-active, .rp-chip-enter {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-font w-full">
+
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-[32px] font-bold tracking-[-0.01em] md:tracking-[-0.02em] leading-[32px] md:leading-[40px] text-[#111C2D] mb-2">Skills &amp; Projects</h1>
+    <p class="text-base leading-[24px] text-[#464555]">Detail your technical capabilities and practical experience to enhance your professional readiness profile.</p>
+  </div>
+
+  <form class="flex flex-col gap-12" method="post" action="{% url 'profiles:skills' %}">
+    {% csrf_token %}
+
+    <!-- Skills Section -->
+    <section class="bg-white rounded-xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50">
+      <div class="mb-4 border-b border-[#C7C4D8]/30 pb-3">
+        <h2 class="text-xl font-semibold text-[#111C2D] flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#3525CD]">code</span>
+          Technical Skills
+        </h2>
+      </div>
+      <div class="flex flex-wrap gap-2 mb-4" id="skillsContainer">
+        {% for skill in initial_skills %}
+        <span class="inline-flex items-center bg-[#F0F3FF] text-[#3525CD] px-3 py-1.5 rounded-full text-sm border border-[#C3C0FF]">
+          {{ skill }}
+          <input type="hidden" name="skills" value="{{ skill }}">
+          <button type="button" class="ml-2 text-[#3525CD] hover:text-[#111C2D] cursor-pointer focus:outline-none" onclick="this.closest('span').remove()" aria-label="Remove {{ skill }}">
+            <span class="material-symbols-outlined text-[16px]">close</span>
+          </button>
+        </span>
+        {% endfor %}
+      </div>
+      <div class="flex flex-col sm:flex-row gap-2">
+        <input class="flex-1 rounded-lg border border-[#C7C4D8] bg-white px-4 py-2.5 text-[#111C2D] placeholder-[#777587] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow"
+               id="skillInput" placeholder="e.g., SQL, AWS..." type="text">
+        <button type="button" id="addSkillBtn" class="w-full sm:w-auto justify-center bg-[#F0F3FF] text-[#3525CD] border border-[#C3C0FF] px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#E7EEFF] transition-colors cursor-pointer flex items-center gap-1">
+          <span class="material-symbols-outlined">add</span>
+          Add Skill
+        </button>
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="bg-white rounded-xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50">
+      <div class="mb-4 border-b border-[#C7C4D8]/30 pb-3">
+        <h2 class="text-xl font-semibold text-[#111C2D] flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#3525CD]">folder_open</span>
+          Projects
+        </h2>
+      </div>
+      <div class="flex flex-col gap-4" id="projectsContainer">
+        {% for project in initial_projects %}
+        <div class="bg-[#F9F9FF] p-4 rounded-lg border border-[#777587]/50 relative group">
+          <button type="button" class="absolute top-3 right-3 text-[#777587] hover:text-[#BA1A1A] transition-colors cursor-pointer" onclick="this.closest('.group').remove()" aria-label="Remove project">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pr-8">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Project Name</label>
+              <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="text" name="project_name" value="{{ project.name }}">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Project URL / Repository</label>
+              <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="url" name="project_url" value="{{ project.url }}">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Description &amp; Key Contributions</label>
+            <textarea class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" name="project_description" rows="3">{{ project.description }}</textarea>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="addProjectBtn" class="mt-4 w-full bg-[#F0F3FF] text-[#3525CD] border border-dashed border-[#C3C0FF] px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#E7EEFF] transition-colors cursor-pointer flex items-center justify-center gap-1">
+        <span class="material-symbols-outlined">add</span>
+        Add Another Project
+      </button>
+    </section>
+
+    <!-- Certifications Section -->
+    <section class="bg-white rounded-xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50">
+      <div class="mb-4 border-b border-[#C7C4D8]/30 pb-3">
+        <h2 class="text-xl font-semibold text-[#111C2D] flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#3525CD]">workspace_premium</span>
+          Certifications
+        </h2>
+      </div>
+      <div class="flex flex-col gap-4" id="certsContainer">
+        {% for cert in initial_certs %}
+        <div class="bg-[#F9F9FF] p-4 rounded-lg border border-[#777587]/50 relative group">
+          <button type="button" class="absolute top-3 right-3 text-[#777587] hover:text-[#BA1A1A] transition-colors cursor-pointer" onclick="this.closest('.group').remove()" aria-label="Remove certification">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Certification Name</label>
+              <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="text" name="cert_name" value="{{ cert.name }}">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Issuing Organization</label>
+              <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="text" name="cert_org" value="{{ cert.org }}">
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" id="addCertBtn" class="mt-4 w-full bg-[#F0F3FF] text-[#3525CD] border border-dashed border-[#C3C0FF] px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#E7EEFF] transition-colors cursor-pointer flex items-center justify-center gap-1">
+        <span class="material-symbols-outlined">add</span>
+        Add Another Certification
+      </button>
+    </section>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 pb-12">
+      <a href="{% url 'profiles:detail' %}" class="px-8 py-2.5 rounded-lg text-sm font-semibold text-[#3525CD] border border-[#3525CD] hover:bg-[#F0F3FF] transition-colors cursor-pointer flex items-center">Cancel</a>
+      <button type="submit" class="px-8 py-2.5 rounded-lg text-sm font-semibold bg-[#3525CD] text-white hover:bg-[#2b1ea8] transition-colors shadow-sm cursor-pointer">Save Profile</button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  // --- Skill chips ---
+  function addSkillChip(value) {
+    const chip = document.createElement('span');
+    chip.className = 'rp-chip-enter inline-flex items-center bg-[#F0F3FF] text-[#3525CD] px-3 py-1.5 rounded-full text-sm border border-[#C3C0FF]';
+    chip.innerHTML = `${value}<input type="hidden" name="skills" value="${value}"><button type="button" class="ml-2 text-[#3525CD] hover:text-[#111C2D] cursor-pointer focus:outline-none" aria-label="Remove ${value}"><span class="material-symbols-outlined text-[16px]">close</span></button>`;
+    chip.querySelector('button').addEventListener('click', () => chip.remove());
+    document.getElementById('skillsContainer').appendChild(chip);
+  }
+
+  document.getElementById('addSkillBtn').addEventListener('click', () => {
+    const input = document.getElementById('skillInput');
+    const value = input.value.trim();
+    if (!value) return;
+    addSkillChip(value);
+    input.value = '';
+    input.focus();
+  });
+
+  document.getElementById('skillInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('addSkillBtn').click();
+    }
+  });
+
+  // --- Repeatable entry groups (Projects / Certifications), sliding in on add ---
+  const projectTemplate = `
+    <div class="rp-slide-down-enter bg-[#F9F9FF] p-4 rounded-lg border border-[#777587]/50 relative group">
+      <button type="button" class="absolute top-3 right-3 text-[#777587] hover:text-[#BA1A1A] transition-colors cursor-pointer" onclick="this.closest('.group').remove()" aria-label="Remove project">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pr-8">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Project Name</label>
+          <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="text" name="project_name" placeholder="e.g., E-commerce Platform">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Project URL / Repository</label>
+          <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="url" name="project_url" placeholder="https://">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Description &amp; Key Contributions</label>
+        <textarea class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" name="project_description" rows="3" placeholder="Describe your role and technologies used..."></textarea>
+      </div>
+    </div>
+  `;
+
+  const certTemplate = `
+    <div class="rp-slide-down-enter bg-[#F9F9FF] p-4 rounded-lg border border-[#777587]/50 relative group">
+      <button type="button" class="absolute top-3 right-3 text-[#777587] hover:text-[#BA1A1A] transition-colors cursor-pointer" onclick="this.closest('.group').remove()" aria-label="Remove certification">
+        <span class="material-symbols-outlined">delete</span>
+      </button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Certification Name</label>
+          <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="text" name="cert_name" placeholder="e.g., Oracle Certified Professional">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-1.5">Issuing Organization</label>
+          <input class="w-full rounded-lg border border-[#C7C4D8] bg-white px-3 py-2.5 text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow" type="text" name="cert_org" placeholder="e.g., Oracle">
+        </div>
+      </div>
+    </div>
+  `;
+
+  function addEntryWithAnimation(containerId, templateStr) {
+    const container = document.getElementById(containerId);
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = templateStr.trim();
+    const newElement = tempDiv.firstChild;
+    container.appendChild(newElement);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        newElement.classList.remove('rp-slide-down-enter');
+        newElement.classList.add('rp-slide-down-enter-active');
+      });
+    });
+    newElement.querySelector('input, textarea').focus();
+  }
+
+  document.getElementById('addProjectBtn').addEventListener('click', () => {
+    addEntryWithAnimation('projectsContainer', projectTemplate);
+  });
+
+  document.getElementById('addCertBtn').addEventListener('click', () => {
+    addEntryWithAnimation('certsContainer', certTemplate);
+  });
+
+});
+</script>
+{% endblock %}

@@ -1,0 +1,225 @@
+{% extends "base_app.html" %}
+
+{% block title %}Progress Tracker{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+  .rp-nums { font-variant-numeric: tabular-nums; }
+  #emaPath { transition: stroke-dashoffset 1400ms cubic-bezier(0.4, 0, 0.2, 1); }
+  #emaFill { transition: opacity 800ms ease-out 400ms; }
+  .rp-highlight-ring { transform-origin: center; transition: r 900ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 900ms ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    #emaPath, #emaFill, .rp-highlight-ring { transition-duration: 0.01ms !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-font w-full flex flex-col gap-6">
+
+  <div>
+    <h1 class="text-2xl md:text-[32px] font-bold tracking-[-0.01em] md:tracking-[-0.02em] leading-[32px] md:leading-[40px] text-[#111C2D] mb-2">Progress Tracker</h1>
+    <p class="text-base leading-[24px] text-[#464555]">Your compatibility score over time, smoothed to show the real trend.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Current score -->
+    <div class="bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 p-6 flex flex-col items-center justify-center text-center">
+      <span class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2">Current Score</span>
+      <span class="rp-nums text-5xl font-bold text-[#3525CD]" id="currentScoreValue">0</span>
+      <span class="text-xs font-semibold uppercase tracking-[0.05em] text-[#777587] mt-1">as of {{ current_label }}</span>
+      <span class="mt-3 inline-flex items-center gap-1 text-sm font-semibold {% if delta >= 0 %}text-[#006C49]{% else %}text-[#93000A]{% endif %}">
+        <span class="material-symbols-outlined text-[18px]">{% if delta >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
+        {% if delta >= 0 %}+{% endif %}{{ delta }} pts
+      </span>
+    </div>
+
+    <!-- EMA trend chart -->
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-semibold text-[#111C2D]">Compatibility Trend</h2>
+        <span class="text-xs font-semibold uppercase tracking-[0.05em] text-[#777587] flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">show_chart</span>
+          Exponential Moving Average
+        </span>
+      </div>
+      <div class="relative w-full" style="height: 220px;">
+        <svg id="emaChart" class="w-full h-full" viewBox="0 0 600 220" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="emaGradient" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.25"></stop>
+              <stop offset="100%" stop-color="#4F46E5" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <line x1="0" x2="600" y1="30" y2="30" stroke="#F0F3FF" stroke-width="1"></line>
+          <line x1="0" x2="600" y1="90" y2="90" stroke="#F0F3FF" stroke-width="1"></line>
+          <line x1="0" x2="600" y1="150" y2="150" stroke="#F0F3FF" stroke-width="1"></line>
+          <g id="rawDots"></g>
+          <path id="emaFill" fill="url(#emaGradient)" opacity="0"></path>
+          <path id="emaPath" fill="none" stroke="#3525CD" stroke-width="3" stroke-linecap="round"></path>
+          <circle id="highlightRing" class="rp-highlight-ring" r="0" fill="none" stroke="#3525CD" stroke-width="2" opacity="0"></circle>
+          <circle id="highlightDot" r="0" fill="#3525CD" stroke="white" stroke-width="2"></circle>
+        </svg>
+        <div id="highlightLabel" class="absolute text-xs font-bold text-[#3525CD] bg-white px-1.5 py-0.5 rounded shadow-sm opacity-0 rp-nums" style="transition: opacity 300ms ease-out 1300ms;"></div>
+      </div>
+      <div class="flex justify-between text-xs font-semibold uppercase tracking-[0.05em] text-[#777587] mt-2" id="chartLabels"></div>
+    </div>
+
+  </div>
+
+  <!-- Insights -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for insight in insights %}
+    <div class="bg-white rounded-xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 p-5 flex items-start gap-3">
+      <div class="w-10 h-10 rounded-full bg-[#E2DFFF] text-[#3525CD] flex items-center justify-center shrink-0">
+        <span class="material-symbols-outlined text-[20px]">{{ insight.icon }}</span>
+      </div>
+      <div>
+        <p class="text-base font-semibold text-[#111C2D]">{{ insight.title }}</p>
+        <p class="text-sm text-[#464555] mt-1">{{ insight.description }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{{ points|json_script:"chart-data" }}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const points = JSON.parse(document.getElementById('chart-data').textContent);
+
+  const width = 600, height = 220;
+  const padTop = 20, padBottom = 30;
+  const scores = points.map(p => p.ema);
+  const rawScores = points.map(p => p.raw);
+  const minScore = Math.min(...scores, ...rawScores) - 5;
+  const maxScore = Math.max(...scores, ...rawScores) + 5;
+  const chartH = height - padTop - padBottom;
+
+  function xAt(i) { return (i / (points.length - 1)) * width; }
+  function yAt(score) { return padTop + chartH * (1 - (score - minScore) / (maxScore - minScore)); }
+
+  const coords = points.map((p, i) => [xAt(i), yAt(p.ema)]);
+
+  // Catmull-Rom to cubic Bezier for a naturally smooth (non-jagged) curve
+  function smoothPath(pts) {
+    if (pts.length < 2) return '';
+    let d = `M ${pts[0][0]},${pts[0][1]}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+      const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+      const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+      const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2[0]},${p2[1]}`;
+    }
+    return d;
+  }
+
+  const linePath = smoothPath(coords);
+  const fillPath = `${linePath} L ${coords[coords.length - 1][0]},${height - padBottom} L ${coords[0][0]},${height - padBottom} Z`;
+
+  const emaPath = document.getElementById('emaPath');
+  const emaFill = document.getElementById('emaFill');
+  emaPath.setAttribute('d', linePath);
+  emaFill.setAttribute('d', fillPath);
+
+  // Faint raw check-in dots behind the smoothed line, to show the real
+  // (jagged) data the trend line is smoothing over.
+  const rawDots = document.getElementById('rawDots');
+  points.forEach((p, i) => {
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('cx', xAt(i));
+    dot.setAttribute('cy', yAt(p.raw));
+    dot.setAttribute('r', 2.5);
+    dot.setAttribute('fill', '#C7C4D8');
+    rawDots.appendChild(dot);
+  });
+
+  // Draw-on animation for the EMA line
+  const length = emaPath.getTotalLength();
+  emaPath.style.strokeDasharray = length;
+  emaPath.style.strokeDashoffset = reduceMotion ? 0 : length;
+  requestAnimationFrame(() => {
+    emaPath.style.strokeDashoffset = '0';
+    emaFill.style.opacity = '1';
+  });
+
+  // Highlight the most recent check-in
+  const [lastX, lastY] = coords[coords.length - 1];
+  const highlightDot = document.getElementById('highlightDot');
+  const highlightRing = document.getElementById('highlightRing');
+  const highlightLabel = document.getElementById('highlightLabel');
+  const chartContainer = document.getElementById('emaChart').parentElement;
+
+  const revealDelay = reduceMotion ? 0 : 1100;
+  setTimeout(() => {
+    highlightDot.setAttribute('cx', lastX);
+    highlightDot.setAttribute('cy', lastY);
+    highlightDot.setAttribute('r', 6);
+    highlightRing.setAttribute('cx', lastX);
+    highlightRing.setAttribute('cy', lastY);
+    highlightRing.setAttribute('r', 12);
+    highlightRing.style.opacity = '1';
+
+    // The highlighted point is always the last (rightmost) one, so anchor
+    // the callout by its right edge to keep it from overflowing the card.
+    const topPct = (lastY / height) * 100;
+    highlightLabel.style.right = '4px';
+    highlightLabel.style.top = `calc(${topPct}% - 28px)`;
+    highlightLabel.textContent = Math.round(points[points.length - 1].ema) + '%';
+    highlightLabel.style.opacity = '1';
+  }, revealDelay);
+
+  // Count up the headline score in sync with the line draw
+  const currentScoreEl = document.getElementById('currentScoreValue');
+  const target = Math.round(points[points.length - 1].ema);
+  const duration = reduceMotion ? 0 : 1400;
+  const start = performance.now();
+  function tick(now) {
+    const progress = duration === 0 ? 1 : Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 2);
+    currentScoreEl.textContent = Math.round(eased * target);
+    if (progress < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // X-axis labels
+  const chartLabels = document.getElementById('chartLabels');
+  points.forEach((p) => {
+    const span = document.createElement('span');
+    span.textContent = p.label;
+    chartLabels.appendChild(span);
+  });
+});
+</script>
+{% endblock %}

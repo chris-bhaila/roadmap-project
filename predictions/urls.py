@@ -7,4 +7,5 @@ app_name = 'predictions'
 urlpatterns = [
     path('', views.predict, name='predict'),
     path('result/', views.prediction_result, name='result'),
+    path('path/<slug:role_slug>/', views.path_detail, name='path_detail'),
 ]

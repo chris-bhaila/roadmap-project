@@ -1,0 +1,214 @@
+{% extends "base_app.html" %}
+
+{% block title %}Internship Recommendations{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+  .rp-card {
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .rp-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.1), 0 4px 6px -4px rgba(30, 41, 59, 0.05);
+    border-color: #C3C0FF;
+  }
+  .rp-card:active { transform: scale(0.98); }
+  .rp-filter-chip { transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease; }
+  .rp-ring circle { transition: stroke-dashoffset 1s ease-in-out; }
+  #resultsList { transition: opacity 200ms ease-out, transform 200ms ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    .rp-card, .rp-filter-chip, .rp-ring circle, #resultsList { transition-duration: 0.01ms !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-font w-full flex flex-col gap-6">
+
+  <div>
+    <h1 class="text-2xl md:text-[32px] font-bold tracking-[-0.01em] md:tracking-[-0.02em] leading-[32px] md:leading-[40px] text-[#111C2D] mb-2">Internship Recommendations</h1>
+    <p class="text-base leading-[24px] text-[#464555]">Curated roles based on your readiness profile.</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-col gap-4">
+    <div>
+      <h3 class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2">Location</h3>
+      <div class="flex flex-wrap gap-2" id="locationFilters">
+        {% for loc in locations %}
+        <button type="button" data-filter-group="location" data-filter-value="{{ loc }}"
+                class="rp-filter-chip cursor-pointer px-4 py-1.5 rounded-full border border-[#C7C4D8] bg-white text-[#464555] text-sm">{{ loc }}</button>
+        {% endfor %}
+      </div>
+    </div>
+    <div>
+      <h3 class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2">Role Type</h3>
+      <div class="flex flex-wrap gap-2" id="typeFilters">
+        {% for t in types %}
+        <button type="button" data-filter-group="type" data-filter-value="{{ t }}"
+                class="rp-filter-chip cursor-pointer px-4 py-1.5 rounded-full border border-[#C7C4D8] bg-white text-[#464555] text-sm">{{ t }}</button>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resultsList">
+    {% for job in listings %}
+    <a href="#" class="rp-card cursor-pointer bg-white rounded-2xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 flex flex-col gap-4 relative"
+       data-location="{{ job.location }}" data-type="{{ job.type }}">
+
+      {% if job.top_recommendation %}
+      <div class="absolute -top-2.5 -right-2.5 w-7 h-7 rounded-full bg-white flex items-center justify-center border-2 border-[#DEE8FF] shadow-sm" title="Top recommendation based on your recent activity">
+        <span class="material-symbols-outlined text-[15px] text-[#3525CD]">stars</span>
+      </div>
+      {% endif %}
+
+      <div class="flex justify-between items-start">
+        <div class="w-12 h-12 rounded-lg bg-[#F0F3FF] border border-[#C7C4D8]/40 flex items-center justify-center text-[#3525CD]">
+          <span class="material-symbols-outlined">business</span>
+        </div>
+        <div class="flex flex-col items-center">
+          <div class="relative w-12 h-12 rp-ring">
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" fill="none" r="15.9155" stroke="#DEE8FF" stroke-width="3"></circle>
+              <circle cx="18" cy="18" fill="none" r="15.9155" stroke="#{{ job.ring_hex }}" stroke-dasharray="100" stroke-dashoffset="100" stroke-linecap="round" stroke-width="3" data-target="{{ job.score }}"></circle>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center text-xs font-bold {{ job.text_class }}" data-score-label>0%</div>
+          </div>
+          <span class="text-[10px] font-semibold uppercase tracking-[0.05em] text-[#777587] mt-1">Match</span>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-[#111C2D] line-clamp-2 mb-1">{{ job.title }}</h2>
+        <p class="text-sm text-[#464555] flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px]">business_center</span>
+          {{ job.company }}
+        </p>
+        <p class="text-sm text-[#464555] flex items-center gap-1.5 mt-1">
+          <span class="material-symbols-outlined text-[16px]">location_on</span>
+          {{ job.location }} &middot; {{ job.type }}
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mt-auto pt-2">
+        {% for tag in job.tags %}
+        <span class="px-2.5 py-1 rounded-full border text-xs font-medium" style="background-color: {{ tag.bg }}; color: {{ tag.text }}; border-color: {{ tag.border }};">{{ tag.name }}</span>
+        {% endfor %}
+      </div>
+
+    </a>
+    {% endfor %}
+  </div>
+
+  <p class="hidden text-center text-[#464555] py-12" id="emptyState">No internships match these filters yet — try clearing one.</p>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const resultsList = document.getElementById('resultsList');
+  const emptyState = document.getElementById('emptyState');
+  const cards = Array.from(resultsList.querySelectorAll('.rp-card'));
+  const activeFilters = { location: new Set(), type: new Set() };
+
+  function animateScore(card, delay) {
+    const circle = card.querySelector('.rp-ring circle[data-target]');
+    const label = card.querySelector('[data-score-label]');
+    if (!circle) return;
+    const target = parseInt(circle.dataset.target, 10);
+    const duration = reduceMotion ? 0 : 900;
+    setTimeout(() => {
+      const start = performance.now();
+      function tick(now) {
+        const progress = duration === 0 ? 1 : Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 2);
+        const current = Math.round(eased * target);
+        circle.style.strokeDashoffset = 100 - eased * target;
+        label.textContent = current + '%';
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }, reduceMotion ? 0 : delay);
+  }
+
+  function matchesFilters(card) {
+    const loc = card.dataset.location;
+    const type = card.dataset.type;
+    const locOk = activeFilters.location.size === 0 || activeFilters.location.has(loc);
+    const typeOk = activeFilters.type.size === 0 || activeFilters.type.has(type);
+    return locOk && typeOk;
+  }
+
+  function applyFilters() {
+    resultsList.style.opacity = '0';
+    resultsList.style.transform = 'translateY(8px)';
+
+    setTimeout(() => {
+      let anyVisible = false;
+      cards.forEach((card) => {
+        if (matchesFilters(card)) {
+          card.classList.remove('hidden');
+          anyVisible = true;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      emptyState.classList.toggle('hidden', anyVisible);
+      resultsList.classList.toggle('hidden', !anyVisible);
+
+      requestAnimationFrame(() => {
+        resultsList.style.opacity = '1';
+        resultsList.style.transform = 'translateY(0)';
+      });
+    }, reduceMotion ? 0 : 180);
+  }
+
+  document.querySelectorAll('.rp-filter-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const group = chip.dataset.filterGroup;
+      const value = chip.dataset.filterValue;
+      const isActive = chip.classList.contains('rp-chip-active');
+
+      if (isActive) {
+        activeFilters[group].delete(value);
+        chip.classList.remove('rp-chip-active', 'bg-[#F0F3FF]', 'text-[#3525CD]', 'border-[#C3C0FF]');
+        chip.classList.add('bg-white', 'text-[#464555]', 'border-[#C7C4D8]');
+      } else {
+        activeFilters[group].add(value);
+        chip.classList.add('rp-chip-active', 'bg-[#F0F3FF]', 'text-[#3525CD]', 'border-[#C3C0FF]');
+        chip.classList.remove('bg-white', 'text-[#464555]', 'border-[#C7C4D8]');
+      }
+
+      applyFilters();
+    });
+  });
+
+  cards.forEach((card, i) => animateScore(card, i * 100));
+});
+</script>
+{% endblock %}

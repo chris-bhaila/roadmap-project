@@ -2,11 +2,11 @@ from django.shortcuts import render
 
 
 def login_view(request):
-    return render(request, 'placeholder.html', {'page_title': 'Login'})
+    return render(request, 'accounts/login.html', {'initial_tab': 'login'})
 
 
 def register_view(request):
-    return render(request, 'placeholder.html', {'page_title': 'Register'})
+    return render(request, 'accounts/login.html', {'initial_tab': 'register'})
 
 
 def logout_view(request):

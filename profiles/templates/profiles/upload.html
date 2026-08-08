@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Resume{% endblock %}
+
+{% block navbar %}
+<header class="w-full bg-white border-b border-[#C7C4D8]/30 h-14 flex items-center">
+  <div class="max-w-[1440px] w-full mx-auto px-4 flex items-center gap-3">
+    <a href="{% url 'profiles:setup' %}" aria-label="Go back" class="text-[#464555] hover:bg-[#F0F3FF] transition-colors p-1.5 rounded-full active:scale-95 duration-150 flex items-center justify-center cursor-pointer">
+      <span class="material-symbols-outlined">arrow_back</span>
+    </a>
+    <div class="flex items-center gap-2 text-[#3525CD]">
+      <span class="material-symbols-outlined text-[22px]">school</span>
+      <span class="font-bold text-base tracking-tight rp-font">Internship Readiness</span>
+    </div>
+  </div>
+</header>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+
+  .rp-dropzone { transition: border-color 200ms ease-in-out, background-color 200ms ease-in-out, transform 200ms ease-in-out; }
+  .rp-drag-active {
+    border-color: #3525CD;
+    background-color: #E2DFFF;
+    transform: scale(1.02);
+  }
+  .rp-checkmark {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: rp-dash 0.6s ease-out forwards;
+  }
+  @keyframes rp-dash { to { stroke-dashoffset: 0; } }
+  .rp-fade-in-up { animation: rp-fade-in-up 400ms ease-out forwards; }
+  @keyframes rp-fade-in-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rp-dropzone, .rp-checkmark, .rp-fade-in-up, #continueBtn, #selectFileBtn {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-font w-full max-w-xl mx-auto flex flex-col" id="uploadPage">
+
+  <div class="mb-6">
+    <h1 class="text-2xl md:text-[32px] font-bold tracking-[-0.01em] md:tracking-[-0.02em] leading-[32px] md:leading-[40px] text-[#111C2D] mb-2">Upload Resume</h1>
+    <p class="text-base leading-[24px] text-[#464555]">We'll extract your skills and experience to tailor your readiness path.</p>
+  </div>
+
+  <!-- Dropzone -->
+  <div class="rp-dropzone w-full border-2 border-dashed border-[#C7C4D8] rounded-xl bg-white flex flex-col items-center justify-center py-16 px-6 cursor-pointer hover:border-[#C3C0FF] hover:bg-[#F0F3FF]/50 relative overflow-hidden group" id="dropzone">
+    <div class="flex flex-col items-center text-center w-full pointer-events-none" id="uploadPrompt">
+      <div class="w-16 h-16 rounded-full bg-[#E2DFFF] flex items-center justify-center text-[#0F0069] mb-4 group-hover:scale-110 transition-transform duration-300">
+        <span class="material-symbols-outlined text-3xl">upload_file</span>
+      </div>
+      <h3 class="text-xl font-semibold text-[#111C2D] mb-1">Drag &amp; drop your file here</h3>
+      <p class="text-sm text-[#464555] mb-4">or click to browse &middot; Supports {{ accepted_formats|join:", " }} (Max {{ max_file_size_mb }}MB)</p>
+      <button type="button" id="selectFileBtn" class="bg-[#3525CD] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-[#2b1ea8] active:scale-95 duration-150 transition-all pointer-events-auto shadow-sm cursor-pointer">
+        Select File
+      </button>
+    </div>
+    <input accept="{{ accepted_extensions }}" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="fileUpload" type="file">
+  </div>
+
+  <!-- File preview card -->
+  <div class="hidden w-full bg-white border border-[#777587]/50 rounded-lg p-4 mt-6 shadow-sm items-center justify-between" id="filePreview">
+    <div class="flex items-center gap-3 overflow-hidden">
+      <div class="w-10 h-10 rounded bg-[#6CF8BB] flex items-center justify-center text-[#00714D] shrink-0">
+        <span class="material-symbols-outlined">description</span>
+      </div>
+      <div class="flex flex-col min-w-0">
+        <span class="text-base font-semibold text-[#111C2D] truncate" id="filenameDisplay">resume_final_v3.pdf</span>
+        <span class="text-sm text-[#464555]" id="filesizeDisplay">245 KB</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-1">
+      <svg class="w-6 h-6 text-[#006C49]" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" id="checkmarkSvg">
+        <path class="rp-checkmark" d="M5 13L9 17L19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+      </svg>
+      <button type="button" aria-label="Remove file" class="p-1.5 text-[#777587] hover:text-[#BA1A1A] transition-colors rounded-full hover:bg-[#FFDAD6]/40 ml-1 cursor-pointer" id="removeFileBtn">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="mt-8 w-full flex flex-col gap-3 items-center">
+    <button type="button" id="continueBtn" class="w-full md:w-auto md:px-16 bg-[#3525CD] text-white py-3 rounded-lg text-base font-semibold shadow-sm opacity-50 cursor-not-allowed transition-opacity duration-200" disabled data-next-url="{% url 'profiles:setup' %}">
+      Continue
+    </button>
+    <a href="{% url 'profiles:setup' %}" class="text-sm text-[#3525CD] font-semibold hover:underline underline-offset-4 cursor-pointer">
+      Add details manually instead
+    </a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileUpload');
+  const uploadPrompt = document.getElementById('uploadPrompt');
+  const filePreview = document.getElementById('filePreview');
+  const filenameDisplay = document.getElementById('filenameDisplay');
+  const filesizeDisplay = document.getElementById('filesizeDisplay');
+  const removeFileBtn = document.getElementById('removeFileBtn');
+  const continueBtn = document.getElementById('continueBtn');
+  const checkmarkPath = document.querySelector('#checkmarkSvg .rp-checkmark');
+
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, () => dropzone.classList.add('rp-drag-active'), false);
+  });
+  ['dragleave', 'drop'].forEach((eventName) => {
+    dropzone.addEventListener(eventName, () => dropzone.classList.remove('rp-drag-active'), false);
+  });
+
+  dropzone.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files), false);
+  fileInput.addEventListener('change', function () { handleFiles(this.files); });
+
+  function handleFiles(files) {
+    if (files.length > 0) showPreview(files[0]);
+  }
+
+  function showPreview(file) {
+    filenameDisplay.textContent = file.name;
+    filesizeDisplay.textContent = formatBytes(file.size);
+
+    dropzone.classList.add('hidden');
+    filePreview.classList.remove('hidden');
+    filePreview.classList.add('flex', 'rp-fade-in-up');
+
+    // Re-trigger the checkmark draw-on animation
+    checkmarkPath.style.animation = 'none';
+    void checkmarkPath.offsetWidth;
+    checkmarkPath.style.animation = '';
+
+    continueBtn.disabled = false;
+    continueBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    continueBtn.classList.add('hover:bg-[#2b1ea8]', 'active:scale-95', 'cursor-pointer');
+  }
+
+  removeFileBtn.addEventListener('click', () => {
+    fileInput.value = '';
+    filePreview.classList.add('hidden');
+    filePreview.classList.remove('flex', 'rp-fade-in-up');
+    dropzone.classList.remove('hidden');
+
+    continueBtn.disabled = true;
+    continueBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    continueBtn.classList.remove('hover:bg-[#2b1ea8]', 'active:scale-95', 'cursor-pointer');
+  });
+
+  document.getElementById('selectFileBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  continueBtn.addEventListener('click', () => {
+    if (!continueBtn.disabled) window.location.href = continueBtn.dataset.nextUrl;
+  });
+
+  function formatBytes(bytes, decimals = 1) {
+    if (!+bytes) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(decimals))} ${sizes[i]}`;
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends "base_app.html" %}
+
+{% block title %}Learning Roadmap{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+  .rp-nums { font-variant-numeric: tabular-nums; }
+  .rp-line-fill { transition: height 1400ms cubic-bezier(0.4, 0, 0.2, 1); }
+  .rp-bar-fill { transition: width 900ms cubic-bezier(0.4, 0, 0.2, 1); }
+  .hover-lift { transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
+  .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(30,41,59,0.08); }
+  @media (prefers-reduced-motion: reduce) {
+    .rp-line-fill, .rp-bar-fill, .hover-lift { transition-duration: 0.01ms !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-font w-full flex flex-col gap-2" id="roadmapPage">
+
+  <div class="mb-6">
+    <h1 class="text-2xl md:text-[32px] font-bold tracking-[-0.01em] md:tracking-[-0.02em] leading-[32px] md:leading-[40px] text-[#111C2D] mb-2">Learning Roadmap</h1>
+    <p class="text-base leading-[24px] text-[#464555]">Your sequenced path to <span class="font-semibold text-[#111C2D]">{{ path_title }}</span> readiness — each step unlocks once its prerequisites are done.</p>
+  </div>
+
+  <div class="relative" id="timeline">
+    <!-- Background track -->
+    <div class="absolute left-[31px] top-8 bottom-8 w-0.5 bg-[#DEE8FF]"></div>
+    <!-- Animated progress fill -->
+    <div class="rp-line-fill absolute left-[31px] top-8 w-0.5 bg-gradient-to-b from-[#3525CD] to-[#4F46E5]" id="lineFill" style="height: 0px;"></div>
+
+    <div class="flex flex-col gap-8">
+      {% for step in steps %}
+      <div class="relative flex gap-4 md:gap-6" data-status="{{ step.status }}">
+
+        <!-- Marker -->
+        <div class="rp-marker relative z-10 w-16 h-16 rounded-full shrink-0 flex items-center justify-center border-4 border-white shadow-sm
+          {% if step.status == 'completed' %}bg-[#3525CD] text-white
+          {% elif step.status == 'current' %}bg-white border-[#3525CD] text-[#3525CD]
+          {% else %}bg-white border-[#DEE8FF] text-[#C7C4D8]{% endif %}">
+          {% if step.status == 'completed' %}
+          <span class="material-symbols-outlined">check_circle</span>
+          {% elif step.status == 'current' %}
+          <span class="material-symbols-outlined">play_arrow</span>
+          {% else %}
+          <span class="material-symbols-outlined">lock</span>
+          {% endif %}
+        </div>
+
+        <!-- Card -->
+        <div class="hover-lift flex-1 min-w-0 bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] p-5 md:p-6
+          {% if step.status == 'locked' %}border border-dashed border-[#C7C4D8]{% elif step.status == 'current' %}border-2 border-[#3525CD]{% else %}border border-[#777587]/50 opacity-90{% endif %}">
+
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs font-semibold uppercase tracking-[0.05em] px-2 py-1 rounded
+              {% if step.status == 'locked' %}bg-[#F0F3FF] text-[#777587]{% else %}bg-[#DEE8FF] text-[#464555]{% endif %}">{{ step.type }}</span>
+            {% if step.status == 'current' %}
+            <span class="text-xs font-semibold uppercase tracking-[0.05em] px-2 py-1 rounded bg-[#E2DFFF] text-[#3525CD]">In Progress</span>
+            {% endif %}
+          </div>
+
+          <h3 class="text-lg font-semibold {% if step.status == 'locked' %}text-[#777587]{% else %}text-[#111C2D]{% endif %}">{{ step.title }}</h3>
+          <p class="text-sm mt-1 {% if step.status == 'locked' %}text-[#C7C4D8]{% else %}text-[#464555]{% endif %}">{{ step.description }}</p>
+
+          {% if step.status == 'current' %}
+          <div class="mt-4">
+            <div class="h-1.5 rounded-full bg-[#DEE8FF] overflow-hidden">
+              <div class="rp-bar-fill h-1.5 rounded-full bg-gradient-to-r from-[#4F46E5] to-[#3525CD]" data-step-bar data-target="{{ step.progress }}" style="width: 0%"></div>
+            </div>
+            <div class="text-right text-xs font-semibold text-[#777587] mt-1 rp-nums" data-step-bar-label>0%</div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const timeline = document.getElementById('timeline');
+  const lineFill = document.getElementById('lineFill');
+  const markers = Array.from(timeline.querySelectorAll('.rp-marker'));
+  const rows = Array.from(timeline.querySelectorAll('[data-status]'));
+
+  function markerCenter(marker) {
+    const timelineTop = timeline.getBoundingClientRect().top;
+    const rect = marker.getBoundingClientRect();
+    return (rect.top - timelineTop) + rect.height / 2;
+  }
+
+  let lastCompletedIdx = -1;
+  let currentIdx = -1;
+  rows.forEach((row, i) => {
+    if (row.dataset.status === 'completed') lastCompletedIdx = i;
+    if (row.dataset.status === 'current') currentIdx = i;
+  });
+
+  let targetHeight = 0;
+  if (currentIdx !== -1) {
+    const prevCenter = lastCompletedIdx !== -1 ? markerCenter(markers[lastCompletedIdx]) : 0;
+    const currentCenter = markerCenter(markers[currentIdx]);
+    const currentStepProgress = parseInt(rows[currentIdx].querySelector('[data-step-bar]')?.dataset.target || '0', 10) / 100;
+    targetHeight = prevCenter + (currentCenter - prevCenter) * currentStepProgress;
+  } else if (lastCompletedIdx !== -1) {
+    targetHeight = markerCenter(markers[lastCompletedIdx]);
+  }
+
+  requestAnimationFrame(() => {
+    lineFill.style.height = (reduceMotion ? targetHeight : 0) + 'px';
+    requestAnimationFrame(() => {
+      lineFill.style.height = targetHeight + 'px';
+    });
+  });
+
+  // Animate the current step's own mini progress bar, slightly after the line
+  const stepBar = timeline.querySelector('[data-step-bar]');
+  if (stepBar) {
+    const target = parseInt(stepBar.dataset.target, 10);
+    const label = timeline.querySelector('[data-step-bar-label]');
+    const delay = reduceMotion ? 0 : 400;
+    const duration = reduceMotion ? 0 : 900;
+
+    setTimeout(() => {
+      const start = performance.now();
+      function tick(now) {
+        const progress = duration === 0 ? 1 : Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 2);
+        const current = Math.round(eased * target);
+        stepBar.style.width = current + '%';
+        if (label) label.textContent = current + '%';
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }, delay);
+  }
+});
+</script>
+{% endblock %}

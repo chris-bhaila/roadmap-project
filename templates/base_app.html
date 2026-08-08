@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% comment %}
+Persistent app navigation: desktop left sidebar (full viewport height) /
+mobile bottom tab bar. This completely replaces base.html's top navbar for
+pages using this template — the sidebar is the only nav chrome, not an
+addition on top of the original bar.
+
+base.html defines "navbar", "messages", "main", and "footer" as independent,
+separately-resolved blocks directly inside <body>. Overriding one has no
+effect on another, so all four are explicitly overridden here — "navbar" to
+fully drop the original top bar (previously left un-overridden, which is why
+it kept rendering through earlier fixes that only touched "main"/"footer"),
+"messages"/"footer" to empty (their content is reused via shared includes
+inside the content column below), and "main" for the actual layout.
+
+Structure: the sidebar (fixed, full 100vh, spans from the very top of the
+viewport since there's no top bar above it) and the content column (messages
++ page content + footer) are direct siblings — nothing wraps either of them.
+The content column is offset by the sidebar's width on desktop via padding.
+
+Everything lives inside the "main" block (not "extra_head"/"scripts") so it
+always renders regardless of what a leaf template does with those blocks —
+leaf templates only need to change their {% extends %} target.
+{% endcomment %}
+
+{% block navbar %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block main %}
+{% url 'home' as url_home %}
+{% url 'roadmap:results' as url_results %}
+{% url 'roadmap:overview' as url_roadmap %}
+{% url 'roadmap:skill_gap' as url_skill_gap %}
+{% url 'roadmap:projects' as url_projects %}
+{% url 'roadmap:internships' as url_internships %}
+{% url 'progress:overview' as url_progress %}
+{% url 'progress:history' as url_history %}
+{% with view_name=request.resolver_match.view_name %}
+
+<!-- Desktop sidebar: fixed, full viewport height, no top offset needed
+     since there is no top bar above it on these pages. -->
+<nav class="hidden md:flex flex-col w-64 shrink-0 fixed inset-y-0 left-0 py-6 px-4 border-r border-[#C7C4D8]/50 bg-white overflow-y-auto z-30">
+
+  <a href="{{ url_home }}" class="flex items-center gap-4 mb-8 px-4 cursor-pointer">
+    <div class="w-12 h-12 rounded-full bg-[#E2DFFF] border-2 border-[#3525CD] flex items-center justify-center shrink-0">
+      <i data-lucide="graduation-cap" class="w-6 h-6 text-[#3525CD]"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-sm font-bold leading-tight text-[#3525CD]">Internship Readiness</div>
+      <div class="text-xs text-[#464555] mt-0.5">Student Dashboard</div>
+    </div>
+  </a>
+
+  <div class="flex flex-col gap-1">
+    <a href="{{ url_results }}" class="app-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'roadmap:results' or view_name == 'predictions:path_detail' %}bg-[#E2DFFF] text-[#3525CD] font-semibold{% else %}text-[#464555] hover:bg-[#F0F3FF]{% endif %}">
+      <i data-lucide="target" class="w-5 h-5 shrink-0"></i>
+      Career Matches
+    </a>
+    <a href="{{ url_roadmap }}" class="app-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'roadmap:overview' or view_name == 'roadmap:skill_gap' or view_name == 'roadmap:projects' %}bg-[#E2DFFF] text-[#3525CD] font-semibold{% else %}text-[#464555] hover:bg-[#F0F3FF]{% endif %}">
+      <i data-lucide="map" class="w-5 h-5 shrink-0"></i>
+      Roadmap
+    </a>
+    <a href="{{ url_internships }}" class="app-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'roadmap:internships' %}bg-[#E2DFFF] text-[#3525CD] font-semibold{% else %}text-[#464555] hover:bg-[#F0F3FF]{% endif %}">
+      <i data-lucide="briefcase" class="w-5 h-5 shrink-0"></i>
+      Internships
+    </a>
+    <a href="{{ url_progress }}" class="app-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'progress:overview' or view_name == 'progress:history' %}bg-[#E2DFFF] text-[#3525CD] font-semibold{% else %}text-[#464555] hover:bg-[#F0F3FF]{% endif %}">
+      <i data-lucide="trending-up" class="w-5 h-5 shrink-0"></i>
+      Progress
+    </a>
+  </div>
+</nav>
+
+<!-- Content column: messages + page content + footer, offset to clear the
+     sidebar on desktop. A direct sibling of the sidebar — no shared wrapper. -->
+<div class="md:pl-64 flex-1 flex flex-col min-h-screen">
+
+  {% if messages %}
+  <div class="max-w-[1440px] w-full mx-auto px-4 pt-4">
+    {% include "_messages_content.html" %}
+  </div>
+  {% endif %}
+
+  <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 py-8 pb-24 md:pb-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="max-w-[1440px] mx-auto px-4 py-6 text-sm text-slate-500">
+      {% include "_footer_content.html" %}
+    </div>
+  </footer>
+</div>
+
+<!-- Mobile bottom tab bar: full-viewport-width, outside the content column —
+     the sidebar is hidden on mobile, so there's no offset to account for. -->
+<nav class="app-bottom-nav md:hidden fixed bottom-0 left-0 w-full flex items-stretch bg-white border-t border-[#C7C4D8]/50 shadow-[0_-4px_6px_-1px_rgba(30,41,59,0.05)] z-40">
+  <a href="{{ url_results }}" class="app-nav-link flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors cursor-pointer {% if view_name == 'roadmap:results' or view_name == 'predictions:path_detail' %}text-[#3525CD]{% else %}text-[#777587]{% endif %}">
+    <i data-lucide="target" class="w-5 h-5"></i>
+    Matches
+  </a>
+  <a href="{{ url_roadmap }}" class="app-nav-link flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors cursor-pointer {% if view_name == 'roadmap:overview' or view_name == 'roadmap:skill_gap' or view_name == 'roadmap:projects' %}text-[#3525CD]{% else %}text-[#777587]{% endif %}">
+    <i data-lucide="map" class="w-5 h-5"></i>
+    Roadmap
+  </a>
+  <a href="{{ url_internships }}" class="app-nav-link flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors cursor-pointer {% if view_name == 'roadmap:internships' %}text-[#3525CD]{% else %}text-[#777587]{% endif %}">
+    <i data-lucide="briefcase" class="w-5 h-5"></i>
+    Internships
+  </a>
+  <a href="{{ url_progress }}" class="app-nav-link flex-1 flex flex-col items-center justify-center gap-1 py-2 text-xs font-medium transition-colors cursor-pointer {% if view_name == 'progress:overview' or view_name == 'progress:history' %}text-[#3525CD]{% else %}text-[#777587]{% endif %}">
+    <i data-lucide="trending-up" class="w-5 h-5"></i>
+    Progress
+  </a>
+</nav>
+
+{% endwith %}
+
+<style>
+  .app-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+</style>
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+{% endblock %}

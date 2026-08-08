@@ -12,11 +12,11 @@
 
     {% block navbar %}
     <nav class="bg-white border-b border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="{% url 'home' %}" class="font-semibold text-lg tracking-tight">
+        <div class="max-w-[1440px] mx-auto px-4 h-16 flex items-center justify-between gap-4 overflow-x-auto">
+            <a href="{% url 'home' %}" class="font-semibold text-lg tracking-tight shrink-0">
                 Internship Readiness
             </a>
-            <div class="flex items-center gap-6 text-sm">
+            <div class="flex items-center gap-6 text-sm shrink-0">
                 <a href="{% url 'profiles:detail' %}" class="hover:text-blue-600">Profile</a>
                 <a href="{% url 'predictions:predict' %}" class="hover:text-blue-600">Prediction</a>
                 <a href="{% url 'roadmap:overview' %}" class="hover:text-blue-600">Roadmap</a>
@@ -33,24 +33,22 @@
 
     {% block messages %}
         {% if messages %}
-        <div class="max-w-6xl mx-auto px-4 pt-4 space-y-2">
-            {% for message in messages %}
-            <div class="rounded-md border border-slate-200 bg-white px-4 py-2 text-sm">
-                {{ message }}
-            </div>
-            {% endfor %}
+        <div class="max-w-[1440px] mx-auto px-4 pt-4">
+            {% include "_messages_content.html" %}
         </div>
         {% endif %}
     {% endblock %}
 
-    <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
+    {% block main %}
+    <main class="flex-1 max-w-[1440px] w-full mx-auto px-4 py-8">
         {% block content %}{% endblock %}
     </main>
+    {% endblock %}
 
     {% block footer %}
     <footer class="border-t border-slate-200 bg-white">
-        <div class="max-w-6xl mx-auto px-4 py-6 text-sm text-slate-500">
-            Internship Readiness Platform
+        <div class="max-w-[1440px] mx-auto px-4 py-6 text-sm text-slate-500">
+            {% include "_footer_content.html" %}
         </div>
     </footer>
     {% endblock %}

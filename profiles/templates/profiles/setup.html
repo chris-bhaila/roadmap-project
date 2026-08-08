@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Setup{% endblock %}
+
+{% block navbar %}
+<header class="w-full bg-white border-b border-[#C7C4D8]/30 h-14 flex items-center">
+  <div class="max-w-[1440px] w-full mx-auto px-4 flex items-center gap-2 text-[#3525CD]">
+    <span class="material-symbols-outlined text-[22px]">school</span>
+    <span class="font-bold text-base tracking-tight rp-font">Internship Readiness</span>
+  </div>
+</header>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+
+  #stepTrack { transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1); }
+  .rp-step-panel {
+    transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1), opacity 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .rp-segment-fill { transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1); transform-origin: left; }
+  .rp-chip-enter { animation: rp-chip-in 200ms ease-out; }
+  @keyframes rp-chip-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #stepTrack, .rp-step-panel, .rp-segment-fill { transition-duration: 0.01ms !important; }
+    .rp-chip-enter { animation-duration: 0.01ms !important; }
+  }
+</style>
+{% endblock %}
+
+{% block main %}
+<main class="flex-1 min-h-0 flex items-center justify-center overflow-hidden px-4 py-3">
+<div class="rp-font w-full max-w-[720px] mx-auto flex flex-col gap-4" id="setupWizard" data-current-step="1" data-total-steps="3">
+
+  <div class="flex flex-col gap-1.5">
+    <h1 class="text-xl md:text-2xl font-bold tracking-[-0.01em] leading-[28px] md:leading-[32px] text-[#111C2D]">Welcome to Internship Readiness</h1>
+    <p class="text-sm md:text-base leading-[20px] md:leading-[24px] text-[#464555]">Let's set up your profile to personalize your readiness journey.</p>
+
+    <!-- Step indicator -->
+    <div class="mt-2 flex items-center gap-3" id="segmentBar">
+      <div class="flex-1 h-2 bg-[#DEE8FF] rounded-full relative overflow-hidden" data-segment="1">
+        <div class="rp-segment-fill absolute inset-0 bg-gradient-to-r from-[#3525CD] to-[#4F46E5] rounded-full" style="transform: scaleX(1);"></div>
+      </div>
+      <div class="flex-1 h-2 bg-[#DEE8FF] rounded-full relative overflow-hidden" data-segment="2">
+        <div class="rp-segment-fill absolute inset-0 bg-gradient-to-r from-[#3525CD] to-[#4F46E5] rounded-full" style="transform: scaleX(0);"></div>
+      </div>
+      <div class="flex-1 h-2 bg-[#DEE8FF] rounded-full relative overflow-hidden" data-segment="3">
+        <div class="rp-segment-fill absolute inset-0 bg-gradient-to-r from-[#3525CD] to-[#4F46E5] rounded-full" style="transform: scaleX(0);"></div>
+      </div>
+    </div>
+    <div class="hidden md:flex justify-between text-sm text-[#464555] mt-1">
+      <span class="rp-step-label font-bold text-[#3525CD]" data-label-for="1">Step 1: Basic Info</span>
+      <span class="rp-step-label" data-label-for="2">Step 2: Skills</span>
+      <span class="rp-step-label" data-label-for="3">Step 3: Goals</span>
+    </div>
+    <p class="md:hidden text-xs font-semibold uppercase tracking-[0.05em] text-[#777587] mt-1" id="mobileStepLabel">Step 1 of 3 &middot; Basic Info</p>
+  </div>
+
+  <!-- Sliding step track: outer clips horizontal only (auto height, never overflows); inner owns the animated height with no overflow property of its own -->
+  <div class="overflow-x-hidden">
+  <div class="relative" id="stepTrack">
+
+    <!-- Step 1: Basic Info -->
+    <div class="rp-step-panel w-full absolute inset-0" data-step="1" style="transform: translateX(0%); position: relative;">
+      <div class="bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 p-5 md:p-6 flex flex-col gap-3">
+        <h2 class="text-xl font-semibold text-[#111C2D] border-b border-[#DEE8FF] pb-2">Basic Information</h2>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]" for="fullName">Full Name</label>
+          <input class="w-full bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg px-3 py-2.5 text-[#111C2D] placeholder-[#777587] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow"
+                 id="fullName" name="full_name" placeholder="Jane Doe" type="text">
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]" for="fieldStudy">Field of Study (Major)</label>
+          <div class="relative">
+            <select class="w-full bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg px-3 py-2.5 text-[#111C2D] appearance-none cursor-pointer focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow"
+                    id="fieldStudy" name="major">
+              <option disabled selected value="">Select your major</option>
+              {% for value, label in majors %}
+              <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-[#464555] pointer-events-none">expand_more</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]">Expected Graduation Year</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-0.5">
+            {% for year in grad_years %}
+            <label class="cursor-pointer">
+              <input class="peer sr-only" name="grad_year" type="radio" value="{{ year }}" {% if forloop.counter0 == 1 %}checked{% endif %}>
+              <div class="w-full bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg py-2 text-center text-[#464555] peer-checked:bg-[#4F46E5] peer-checked:text-white peer-checked:border-[#3525CD] transition-colors hover:bg-[#DEE8FF] cursor-pointer">
+                {{ year }}
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] flex items-center gap-1" for="github">
+            <span class="material-symbols-outlined text-[16px]">link</span>
+            GitHub Profile (Optional)
+          </label>
+          <input class="w-full bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg px-3 py-2.5 text-[#111C2D] placeholder-[#777587] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow"
+                 id="github" name="github" placeholder="https://github.com/username" type="url">
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Skills -->
+    <div class="rp-step-panel w-full absolute inset-0" data-step="2" style="transform: translateX(100%);">
+      <div class="bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 p-5 md:p-6 flex flex-col gap-3">
+        <h2 class="text-xl font-semibold text-[#111C2D] border-b border-[#DEE8FF] pb-2 flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#3525CD]">code</span>
+          Technical Skills
+        </h2>
+        <p class="text-sm text-[#464555]">Add the languages, frameworks, and tools you're comfortable with.</p>
+        <div class="flex flex-wrap gap-2" id="skillsContainer">
+          {% for skill in suggested_skills %}
+          <span class="inline-flex items-center bg-[#F0F3FF] text-[#3525CD] px-3 py-1.5 rounded-full text-sm border border-[#C3C0FF]">
+            {{ skill }}
+            <button type="button" class="ml-2 text-[#3525CD] hover:text-[#111C2D] cursor-pointer focus:outline-none" onclick="this.closest('span').remove()" aria-label="Remove {{ skill }}">
+              <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+          </span>
+          {% endfor %}
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <input class="flex-1 bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg px-3 py-2.5 text-[#111C2D] placeholder-[#777587] focus:outline-none focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 transition-shadow"
+                 id="skillInput" placeholder="e.g., SQL, AWS..." type="text">
+          <button type="button" id="addSkillBtn" class="w-full sm:w-auto justify-center bg-[#F0F3FF] text-[#3525CD] border border-[#C3C0FF] px-4 py-3 rounded-lg text-sm font-semibold hover:bg-[#E7EEFF] transition-colors cursor-pointer flex items-center gap-1">
+            <span class="material-symbols-outlined">add</span>
+            Add Skill
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Goals -->
+    <div class="rp-step-panel w-full absolute inset-0" data-step="3" style="transform: translateX(100%);">
+      <div class="bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 p-5 md:p-6 flex flex-col gap-3">
+        <div>
+          <h2 class="text-xl font-semibold text-[#111C2D] border-b border-[#DEE8FF] pb-2 flex items-center gap-2">
+            <span class="material-symbols-outlined text-[#3525CD]">target</span>
+            Your Goals
+          </h2>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]">Target Roles</label>
+          <p class="text-sm text-[#464555] -mt-1 mb-1">Select the career paths you're most interested in.</p>
+          <div class="flex flex-wrap gap-2">
+            {% for role in target_roles %}
+            <label class="cursor-pointer">
+              <input class="peer sr-only" type="checkbox" name="target_roles" value="{{ role }}">
+              <span class="inline-block px-4 py-2 rounded-full border border-[#C7C4D8] text-sm text-[#464555] peer-checked:bg-[#4F46E5] peer-checked:text-white peer-checked:border-[#3525CD] transition-colors hover:bg-[#DEE8FF]">
+                {{ role }}
+              </span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]">Preferred Internship Type</label>
+          <div class="grid grid-cols-3 gap-2 mt-0.5">
+            {% for type in internship_types %}
+            <label class="cursor-pointer">
+              <input class="peer sr-only" name="internship_type" type="radio" value="{{ type }}" {% if forloop.first %}checked{% endif %}>
+              <div class="w-full bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg py-2 text-center text-[#464555] peer-checked:bg-[#4F46E5] peer-checked:text-white peer-checked:border-[#3525CD] transition-colors hover:bg-[#DEE8FF] cursor-pointer">
+                {{ type }}
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]">Weekly Time Commitment</label>
+          <div class="grid grid-cols-3 gap-2 mt-0.5">
+            {% for slot in time_commitments %}
+            <label class="cursor-pointer">
+              <input class="peer sr-only" name="time_commitment" type="radio" value="{{ slot }}" {% if forloop.first %}checked{% endif %}>
+              <div class="w-full bg-[#F0F3FF] border border-[#C7C4D8] rounded-lg py-2 text-center text-[#464555] peer-checked:bg-[#4F46E5] peer-checked:text-white peer-checked:border-[#3525CD] transition-colors hover:bg-[#DEE8FF] cursor-pointer">
+                {{ slot }}
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="flex justify-between items-center">
+    <button type="button" id="backBtn" class="px-6 py-2.5 rounded-lg text-sm font-semibold text-[#3525CD] border border-[#3525CD] hover:bg-[#F0F3FF] transition-colors cursor-pointer flex items-center gap-2 invisible">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+      Back
+    </button>
+    <button type="button" id="nextBtn" class="ml-auto px-8 py-2.5 rounded-lg text-sm font-semibold bg-[#3525CD] text-white hover:bg-[#2b1ea8] transition-colors cursor-pointer shadow-sm flex items-center gap-2" data-complete-url="{% url 'profiles:detail' %}">
+      Next Step
+      <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+    </button>
+  </div>
+
+</div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const wizard = document.getElementById('setupWizard');
+  const track = document.getElementById('stepTrack');
+  const panels = Array.from(track.querySelectorAll('.rp-step-panel'));
+  const segments = Array.from(document.querySelectorAll('[data-segment] .rp-segment-fill'));
+  const stepLabels = Array.from(document.querySelectorAll('.rp-step-label'));
+  const mobileLabel = document.getElementById('mobileStepLabel');
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const totalSteps = parseInt(wizard.dataset.totalSteps, 10);
+
+  const stepMeta = {
+    1: 'Basic Info',
+    2: 'Skills',
+    3: 'Goals',
+  };
+
+  function sizeTrackToStep(stepNum) {
+    const panel = panels[stepNum - 1];
+    // getBoundingClientRect (not scrollHeight) so the card's own border is
+    // included — scrollHeight excludes border-width and undercounts it.
+    track.style.height = panel.querySelector(':scope > div').getBoundingClientRect().height + 'px';
+  }
+
+  function renderStep(stepNum, { animate = true } = {}) {
+    panels.forEach((panel, idx) => {
+      const n = idx + 1;
+      if (!animate) panel.style.transition = 'none';
+      if (n === stepNum) {
+        panel.style.position = 'relative';
+        panel.style.transform = 'translateX(0%)';
+        panel.style.opacity = '1';
+        panel.style.pointerEvents = 'auto';
+      } else if (n < stepNum) {
+        panel.style.position = 'absolute';
+        panel.style.transform = 'translateX(-100%)';
+        panel.style.opacity = '0';
+        panel.style.pointerEvents = 'none';
+      } else {
+        panel.style.position = 'absolute';
+        panel.style.transform = 'translateX(100%)';
+        panel.style.opacity = '0';
+        panel.style.pointerEvents = 'none';
+      }
+      if (!animate) requestAnimationFrame(() => { panel.style.transition = ''; });
+    });
+
+    segments.forEach((fill, idx) => {
+      const n = idx + 1;
+      fill.style.transform = n <= stepNum ? 'scaleX(1)' : 'scaleX(0)';
+    });
+
+    stepLabels.forEach((label) => {
+      const n = parseInt(label.dataset.labelFor, 10);
+      label.classList.toggle('font-bold', n === stepNum);
+      label.classList.toggle('text-[#3525CD]', n === stepNum);
+      label.classList.toggle('text-[#464555]', n !== stepNum);
+    });
+
+    mobileLabel.textContent = `Step ${stepNum} of ${totalSteps} · ${stepMeta[stepNum]}`;
+
+    backBtn.classList.toggle('invisible', stepNum === 1);
+    if (stepNum === totalSteps) {
+      nextBtn.textContent = '';
+      nextBtn.innerHTML = 'Save Profile <span class="material-symbols-outlined text-[18px]">check</span>';
+    } else {
+      nextBtn.innerHTML = 'Next Step <span class="material-symbols-outlined text-[18px]">arrow_forward</span>';
+    }
+
+    sizeTrackToStep(stepNum);
+    wizard.dataset.currentStep = stepNum;
+  }
+
+  nextBtn.addEventListener('click', () => {
+    const current = parseInt(wizard.dataset.currentStep, 10);
+    if (current < totalSteps) {
+      renderStep(current + 1);
+    } else {
+      window.location.href = nextBtn.dataset.completeUrl;
+    }
+  });
+
+  backBtn.addEventListener('click', () => {
+    const current = parseInt(wizard.dataset.currentStep, 10);
+    if (current > 1) renderStep(current - 1);
+  });
+
+  document.getElementById('addSkillBtn').addEventListener('click', () => {
+    const input = document.getElementById('skillInput');
+    const value = input.value.trim();
+    if (!value) return;
+    const chip = document.createElement('span');
+    chip.className = 'rp-chip-enter inline-flex items-center bg-[#F0F3FF] text-[#3525CD] px-3 py-1.5 rounded-full text-sm border border-[#C3C0FF]';
+    chip.innerHTML = `${value}<button type="button" class="ml-2 text-[#3525CD] hover:text-[#111C2D] cursor-pointer focus:outline-none" aria-label="Remove ${value}"><span class="material-symbols-outlined text-[16px]">close</span></button>`;
+    chip.querySelector('button').addEventListener('click', () => chip.remove());
+    document.getElementById('skillsContainer').appendChild(chip);
+    input.value = '';
+    input.focus();
+  });
+
+  document.getElementById('skillInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('addSkillBtn').click();
+    }
+  });
+
+  renderStep(1, { animate: false });
+  window.addEventListener('resize', () => sizeTrackToStep(parseInt(wizard.dataset.currentStep, 10)));
+
+  // Web fonts (Inter, Material Symbols) can finish loading after the initial
+  // measurement above, reflowing text by a couple of px — re-measure once
+  // they're actually applied so the track height doesn't go stale.
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => sizeTrackToStep(parseInt(wizard.dataset.currentStep, 10)));
+  }
+});
+</script>
+{% endblock %}

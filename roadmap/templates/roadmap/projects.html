@@ -1,0 +1,90 @@
+{% extends "base_app.html" %}
+
+{% block title %}Recommended Projects{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 1;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+  .rp-card {
+    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+  .rp-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(30, 41, 59, 0.1), 0 4px 6px -4px rgba(30, 41, 59, 0.05);
+    border-color: #C3C0FF;
+  }
+  .rp-card:active {
+    transform: scale(0.98);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rp-card { transition-duration: 0.01ms !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rp-font w-full flex flex-col gap-6">
+
+  <div>
+    <h1 class="text-2xl md:text-[32px] font-bold tracking-[-0.01em] md:tracking-[-0.02em] leading-[32px] md:leading-[40px] text-[#111C2D] mb-2">Recommended Projects</h1>
+    <p class="text-base leading-[24px] text-[#464555]">Build these to close your biggest skill gaps for <span class="font-semibold text-[#111C2D]">{{ path_title }}</span>.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for project in projects %}
+    <a href="#" class="rp-card cursor-pointer bg-white rounded-2xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#777587]/50 flex flex-col gap-4">
+
+      <div class="flex items-start justify-between gap-3">
+        <div class="w-12 h-12 rounded-xl bg-[#E2DFFF] text-[#3525CD] flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined">{{ project.icon }}</span>
+        </div>
+        <span class="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.05em] bg-[#3525CD] text-white px-2.5 py-1.5 rounded-full">
+          <span class="material-symbols-outlined text-[14px]">bolt</span>
+          Closes: {{ project.closes_skill }}
+        </span>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-[#111C2D]">{{ project.title }}</h2>
+        <p class="text-sm text-[#464555] mt-1.5">{{ project.description }}</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        {% for tech in project.tech %}
+        <span class="px-2.5 py-1 rounded-full border text-xs font-medium" style="background-color: {{ tech.bg }}; color: {{ tech.text }}; border-color: {{ tech.border }};">{{ tech.name }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="mt-auto pt-3 border-t border-[#DEE8FF] flex items-center justify-between text-xs font-semibold uppercase tracking-[0.05em] text-[#777587]">
+        <span>{{ project.difficulty }} &middot; {{ project.estimated_time }}</span>
+        <span class="inline-flex items-center gap-1 text-[#3525CD] normal-case font-semibold text-sm">
+          View brief
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+        </span>
+      </div>
+
+    </a>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

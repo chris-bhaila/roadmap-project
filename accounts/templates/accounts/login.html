@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+  .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+  .rp-font { font-family: 'Inter', sans-serif; }
+  .rp-toggle-slider { transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1); }
+  .rp-spinner {
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top: 3px solid #ffffff;
+    width: 20px;
+    height: 20px;
+    animation: rp-spin 1s linear infinite;
+  }
+  @keyframes rp-spin { to { transform: rotate(360deg); } }
+  @keyframes rp-fade-in-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .rp-entrance { animation: rp-fade-in-up 200ms ease-out forwards; }
+  .rp-auth-form { transition: opacity 300ms ease; }
+</style>
+{% endblock %}
+
+{% block main %}
+<main class="flex-1 w-full">
+<div class="rp-font grid lg:grid-cols-2 min-h-screen" data-initial-tab="{{ initial_tab|default:'login' }}" id="authPage">
+
+  <!-- Brand / marketing panel (desktop only) -->
+  <div class="hidden lg:flex flex-col justify-between bg-gradient-to-br from-[#0F0069] to-[#3525CD] text-white px-12 py-12 relative overflow-hidden">
+    <div class="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-[#4F46E5] blur-[100px] opacity-40"></div>
+    <div class="absolute -bottom-24 -left-16 w-72 h-72 rounded-full bg-[#6CF8BB] blur-[110px] opacity-20"></div>
+
+    <div class="relative flex items-center gap-2">
+      <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">school</span>
+      <span class="text-lg font-bold tracking-tight">Internship Readiness</span>
+    </div>
+
+    <div class="relative max-w-md">
+      <span class="inline-block rounded-full bg-white/10 border border-white/15 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.05em] text-[#C3C0FF]">
+        Personalized &middot; Skill-mapped &middot; Ready
+      </span>
+      <h1 class="text-4xl font-bold leading-[1.15] tracking-[-0.02em] mt-6">
+        Know exactly what to build next.
+      </h1>
+      <p class="text-base leading-[26px] text-[#DAD7FF] mt-4">
+        We turn your resume and skills into a ranked list of career paths, a
+        skill-gap breakdown, and a week-by-week plan to close it.
+      </p>
+
+      <div class="mt-10 space-y-5">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-[#6CF8BB] mt-0.5">target</span>
+          <p class="text-sm leading-[20px] text-[#E2DFFF]">Top 5 career matches, ranked to your profile</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-[#6CF8BB] mt-0.5">insights</span>
+          <p class="text-sm leading-[20px] text-[#E2DFFF]">A skill-gap breakdown for every path</p>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-[#6CF8BB] mt-0.5">checklist</span>
+          <p class="text-sm leading-[20px] text-[#E2DFFF]">A roadmap of projects and resources to close it</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="relative text-xs text-[#9089D6]">&copy; 2026 Internship Readiness. Built for students.</p>
+  </div>
+
+  <!-- Form panel -->
+  <div class="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-20 bg-[#F9F9FF]">
+    <div class="rp-entrance w-full max-w-[400px] mx-auto">
+
+      <div class="flex items-center gap-2 text-[#3525CD] lg:hidden mb-10 justify-center">
+        <span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">school</span>
+        <span class="text-lg font-bold tracking-tight">Internship Readiness</span>
+      </div>
+
+      <div class="relative bg-[#F0F3FF] rounded-xl p-1 flex mb-8">
+        <div class="absolute top-1 left-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm border border-[#C7C4D8]/20 rp-toggle-slider" id="toggleBg"></div>
+        <button type="button" class="relative z-10 w-1/2 py-3 text-xs font-semibold uppercase tracking-[0.05em] text-[#3525CD] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3525CD] rounded-lg" id="btnLoginTab" onclick="rpSwitchTab('login')">
+          Login
+        </button>
+        <button type="button" class="relative z-10 w-1/2 py-3 text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3525CD] rounded-lg" id="btnRegisterTab" onclick="rpSwitchTab('register')">
+          Register
+        </button>
+      </div>
+
+      <div class="relative" id="formContainer" style="transition: height 250ms ease;">
+
+        <form class="rp-auth-form absolute w-full top-0 left-0 opacity-100 z-10" id="loginForm" method="post" action="{% url 'accounts:login' %}">
+          {% csrf_token %}
+          <h2 class="text-2xl font-bold tracking-[-0.01em] text-[#111C2D] mb-1">Welcome back</h2>
+          <p class="text-sm text-[#464555] mb-6">Sign in to see your latest career matches.</p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2" for="loginUsername">Email Address</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587]">mail</span>
+                <input class="w-full pl-[40px] pr-3 py-[14px] bg-white border border-[#C7C4D8] rounded-lg text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-1 focus:ring-[#3525CD] transition-shadow placeholder-[#C7C4D8] text-base"
+                       id="loginUsername" name="username" placeholder="student@university.edu" required type="text">
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555]" for="loginPassword">Password</label>
+                <a class="text-sm text-[#3525CD] hover:underline cursor-pointer focus:outline-none" href="#">Forgot?</a>
+              </div>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587]">lock</span>
+                <input class="w-full pl-[40px] pr-[40px] py-[14px] bg-white border border-[#C7C4D8] rounded-lg text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-1 focus:ring-[#3525CD] transition-shadow placeholder-[#C7C4D8] text-base"
+                       id="loginPassword" name="password" placeholder="••••••••" required type="password">
+                <button class="absolute right-3 top-1/2 -translate-y-1/2 text-[#777587] hover:text-[#111C2D] cursor-pointer focus:outline-none" type="button" onclick="rpTogglePassword('loginPassword', this)">
+                  <span class="material-symbols-outlined text-[20px]">visibility_off</span>
+                </button>
+              </div>
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer select-none" for="loginRemember">
+              <input class="w-4 h-4 rounded border-[#C7C4D8] text-[#3525CD] focus:ring-[#3525CD] cursor-pointer" id="loginRemember" name="remember" type="checkbox">
+              <span class="text-sm text-[#464555]">Keep me signed in</span>
+            </label>
+          </div>
+          <button class="w-full mt-6 bg-[#3525CD] text-white py-[14px] rounded-lg text-xs font-semibold uppercase tracking-[0.05em] hover:bg-[#2b1ea8] transition-colors active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3525CD] focus:ring-offset-2 flex justify-center items-center h-[52px]"
+                  id="btnLoginSubmit" type="submit">
+            <span id="loginBtnText">Sign In</span>
+            <div class="rp-spinner hidden" id="loginSpinner"></div>
+          </button>
+
+          <div class="flex items-center gap-3 my-6">
+            <div class="h-px flex-1 bg-[#C7C4D8]/40"></div>
+            <span class="text-xs text-[#777587]">or</span>
+            <div class="h-px flex-1 bg-[#C7C4D8]/40"></div>
+          </div>
+
+          <button type="button" title="Coming soon" aria-disabled="true"
+                  class="w-full py-[14px] rounded-lg border border-[#C7C4D8] bg-white text-sm font-medium text-[#464555] flex justify-center items-center gap-2 cursor-not-allowed opacity-60">
+            <svg class="w-[18px] h-[18px]" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+              <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.2-5.1l-6.6-5.4C29.6 35.4 27 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.6 39.6 16.2 44 24 44z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.6 5.4C40.9 36.6 44 30.9 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+            </svg>
+            Continue with Google
+          </button>
+
+          <p class="text-sm text-[#464555] text-center mt-6">By signing in, you agree to our <a class="text-[#3525CD] hover:underline cursor-pointer" href="#">Terms</a></p>
+        </form>
+
+        <form class="rp-auth-form absolute w-full top-0 left-0 opacity-0 pointer-events-none z-0" id="registerForm" method="post" action="{% url 'accounts:register' %}">
+          {% csrf_token %}
+          <h2 class="text-2xl font-bold tracking-[-0.01em] text-[#111C2D] mb-1">Create your account</h2>
+          <p class="text-sm text-[#464555] mb-6">Get your top 5 career matches in minutes.</p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2" for="regName">Full Name</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587]">person</span>
+                <input class="w-full pl-[40px] pr-3 py-[14px] bg-white border border-[#C7C4D8] rounded-lg text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-1 focus:ring-[#3525CD] transition-shadow placeholder-[#C7C4D8] text-base"
+                       id="regName" name="full_name" placeholder="Alex Chen" required type="text">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2" for="regEmail">Email Address</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587]">mail</span>
+                <input class="w-full pl-[40px] pr-3 py-[14px] bg-white border border-[#C7C4D8] rounded-lg text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-1 focus:ring-[#3525CD] transition-shadow placeholder-[#C7C4D8] text-base"
+                       id="regEmail" name="email" placeholder="student@university.edu" required type="email">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-[0.05em] text-[#464555] mb-2" for="regPassword">Create Password</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[#777587]">lock</span>
+                <input class="w-full pl-[40px] pr-[40px] py-[14px] bg-white border border-[#C7C4D8] rounded-lg text-[#111C2D] focus:outline-none focus:border-[#3525CD] focus:ring-1 focus:ring-[#3525CD] transition-shadow placeholder-[#C7C4D8] text-base"
+                       id="regPassword" name="password" placeholder="••••••••" required type="password">
+                <button class="absolute right-3 top-1/2 -translate-y-1/2 text-[#777587] hover:text-[#111C2D] cursor-pointer focus:outline-none" type="button" onclick="rpTogglePassword('regPassword', this)">
+                  <span class="material-symbols-outlined text-[20px]">visibility_off</span>
+                </button>
+              </div>
+              <p class="text-xs text-[#777587] mt-2">Must be at least 8 characters.</p>
+            </div>
+          </div>
+          <button class="w-full mt-6 bg-[#3525CD] text-white py-[14px] rounded-lg text-xs font-semibold uppercase tracking-[0.05em] hover:bg-[#2b1ea8] transition-colors active:scale-[0.98] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#3525CD] focus:ring-offset-2 flex justify-center items-center h-[52px]"
+                  id="btnRegisterSubmit" type="submit">
+            <span id="registerBtnText">Create Account</span>
+            <div class="rp-spinner hidden" id="registerSpinner"></div>
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function rpSizeContainerTo(formEl) {
+    document.getElementById('formContainer').style.height = formEl.scrollHeight + 'px';
+  }
+
+  function rpSwitchTab(tab) {
+    const bg = document.getElementById('toggleBg');
+    const btnLogin = document.getElementById('btnLoginTab');
+    const btnRegister = document.getElementById('btnRegisterTab');
+    const formLogin = document.getElementById('loginForm');
+    const formRegister = document.getElementById('registerForm');
+
+    if (tab === 'login') {
+      bg.style.transform = 'translateX(0)';
+      btnLogin.classList.replace('text-[#464555]', 'text-[#3525CD]');
+      btnRegister.classList.replace('text-[#3525CD]', 'text-[#464555]');
+      formLogin.classList.remove('opacity-0', 'pointer-events-none', 'z-0');
+      formLogin.classList.add('opacity-100', 'z-10');
+      formRegister.classList.remove('opacity-100', 'z-10');
+      formRegister.classList.add('opacity-0', 'pointer-events-none', 'z-0');
+      rpSizeContainerTo(formLogin);
+    } else {
+      bg.style.transform = 'translateX(100%)';
+      btnRegister.classList.replace('text-[#464555]', 'text-[#3525CD]');
+      btnLogin.classList.replace('text-[#3525CD]', 'text-[#464555]');
+      formRegister.classList.remove('opacity-0', 'pointer-events-none', 'z-0');
+      formRegister.classList.add('opacity-100', 'z-10');
+      formLogin.classList.remove('opacity-100', 'z-10');
+      formLogin.classList.add('opacity-0', 'pointer-events-none', 'z-0');
+      rpSizeContainerTo(formRegister);
+    }
+  }
+
+  function rpTogglePassword(fieldId, btn) {
+    const field = document.getElementById(fieldId);
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (field.type === 'password') {
+      field.type = 'text';
+      icon.textContent = 'visibility';
+    } else {
+      field.type = 'password';
+      icon.textContent = 'visibility_off';
+    }
+  }
+
+  function rpShowSubmitting(formId) {
+    const prefix = formId === 'loginForm' ? 'login' : 'register';
+    const btnText = document.getElementById(`${prefix}BtnText`);
+    const spinner = document.getElementById(`${prefix}Spinner`);
+    const btn = document.getElementById(`btn${prefix.charAt(0).toUpperCase() + prefix.slice(1)}Submit`);
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    btn.disabled = true;
+    btn.classList.add('opacity-90', 'cursor-not-allowed');
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', () => rpShowSubmitting('loginForm'));
+  document.getElementById('registerForm').addEventListener('submit', () => rpShowSubmitting('registerForm'));
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const initialTab = document.getElementById('authPage').dataset.initialTab || 'login';
+    const formContainer = document.getElementById('formContainer');
+    formContainer.style.transition = 'none';
+    if (initialTab === 'register') {
+      document.getElementById('toggleBg').style.transition = 'none';
+      rpSwitchTab('register');
+      requestAnimationFrame(() => {
+        document.getElementById('toggleBg').style.transition = '';
+      });
+    } else {
+      rpSizeContainerTo(document.getElementById('loginForm'));
+    }
+    requestAnimationFrame(() => {
+      formContainer.style.transition = 'height 250ms ease';
+    });
+  });
+</script>
+{% endblock %}
