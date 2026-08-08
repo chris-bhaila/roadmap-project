@@ -1,0 +1,362 @@
+{% extends "base_admin.html" %}
+{% comment %}
+Source: Stitch "Path Management (Admin)" screen (project "Internship
+Readiness Platform"). Colors/spacing/type all matched DESIGN.md exactly.
+
+One drift found and corrected: the screen's own Tailwind config remapped
+`rounded-xl` to 12px for the table's outer card, but DESIGN.md specifies 16px
+for cards/large containers — so the card below uses the framework's default
+`rounded-2xl` (16px) instead of `rounded-xl`.
+
+Icons: the Stitch screen used Material Symbols; swapped for Lucide (via
+data-lucide) to match the icon system already used elsewhere in this app
+(see base_app.html).
+
+Skill editing and a status field were added to the inline edit form — the
+Stitch mock only exposed Pathway Name/Category there, but the task calls for
+editing "required skills" too.
+{% endcomment %}
+
+{% block title %}{{ page_title }} — Internship Readiness Platform{% endblock %}
+
+{% block content %}
+<div id="taxonomy-root">
+
+  <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-[32px] leading-[40px] tracking-[-0.02em] font-bold text-[#111C2D]">Career Path &amp; Skill Taxonomy</h1>
+      <p class="text-base text-[#464555] mt-1">Manage and configure professional readiness pathways for students.</p>
+    </div>
+    <button type="button" id="add-path-btn" class="bg-[#3525CD] hover:bg-[#4F46E5] text-white text-sm font-medium px-6 py-3 rounded-lg shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] active:scale-95 transition-all duration-150 flex items-center justify-center gap-2 w-full md:w-auto cursor-pointer">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      Add New Path
+    </button>
+  </header>
+
+  <div class="flex flex-col sm:flex-row items-center gap-4 mb-6">
+    <div class="relative w-full sm:max-w-md">
+      <i data-lucide="search" class="w-5 h-5 text-[#777587] absolute left-3 top-1/2 -translate-y-1/2"></i>
+      <input type="text" id="taxonomy-search" placeholder="Search pathways or skills..."
+             class="w-full pl-10 pr-4 py-3 bg-white border border-[#C7C4D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm text-[#111C2D] placeholder:text-[#777587] transition-colors shadow-sm">
+    </div>
+    <div class="relative ml-auto sm:ml-0">
+      <button type="button" id="filter-btn" class="p-3 bg-white border border-[#C7C4D8] rounded-lg hover:bg-[#F0F3FF] transition-colors shadow-sm flex items-center justify-center text-[#464555] cursor-pointer">
+        <i data-lucide="list-filter" class="w-5 h-5"></i>
+      </button>
+      <div id="filter-menu" class="hidden absolute right-0 mt-2 w-40 bg-white border border-[#C7C4D8]/50 rounded-lg shadow-lg z-20 py-1">
+        <button type="button" class="filter-option w-full text-left px-4 py-2 text-sm text-[#464555] hover:bg-[#F0F3FF] cursor-pointer" data-status="all">All statuses</button>
+        <button type="button" class="filter-option w-full text-left px-4 py-2 text-sm text-[#464555] hover:bg-[#F0F3FF] cursor-pointer" data-status="active">Active only</button>
+        <button type="button" class="filter-option w-full text-left px-4 py-2 text-sm text-[#464555] hover:bg-[#F0F3FF] cursor-pointer" data-status="draft">Draft only</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#D8E3FB] overflow-hidden">
+
+    <div class="hidden md:grid grid-cols-12 gap-4 p-6 border-b border-[#D8E3FB] bg-[#F0F3FF] text-xs font-semibold tracking-[0.05em] uppercase text-[#464555]">
+      <div class="col-span-3">Pathway Name</div>
+      <div class="col-span-5">Core Skills</div>
+      <div class="col-span-2 text-center">Status</div>
+      <div class="col-span-2 text-right">Actions</div>
+    </div>
+
+    <div id="taxonomy-rows">
+      {% for path in paths %}
+      <div class="taxonomy-row group border-b border-[#D8E3FB] last:border-b-0 hover:bg-[#F0F3FF]/60 transition-colors p-4 md:p-0"
+           id="row-{{ path.id }}" data-status="{{ path.status }}"
+           data-search="{{ path.name|lower }} {{ path.category|lower }} {{ path.skills|join:' '|lower }}">
+
+        <div class="md:grid grid-cols-12 gap-4 md:p-6 items-center" id="view-{{ path.id }}">
+          <div class="col-span-12 md:col-span-3 mb-3 md:mb-0">
+            <h3 class="text-lg font-semibold text-[#111C2D] js-field-name">{{ path.name }}</h3>
+            <p class="text-sm text-[#464555] js-field-category">{{ path.category }}</p>
+          </div>
+          <div class="col-span-12 md:col-span-5 mb-3 md:mb-0 flex flex-wrap gap-2 js-field-skills">
+            {% for skill in path.skills|slice:":3" %}
+            <span class="bg-[#3525CD]/10 text-[#3525CD] px-3 py-1 rounded-full text-sm whitespace-nowrap">{{ skill }}</span>
+            {% endfor %}
+            {% if path.skills|length > 3 %}
+            <span class="bg-[#E7EEFF] text-[#464555] px-3 py-1 rounded-full text-sm whitespace-nowrap">+{{ path.skills|length|add:"-3" }} more</span>
+            {% endif %}
+          </div>
+          <div class="col-span-6 md:col-span-2 flex items-center md:justify-center">
+            <span class="js-field-status-badge flex items-center gap-1.5 {% if path.status == 'active' %}text-[#006C49]{% else %}text-[#885500]{% endif %}">
+              <span class="w-2 h-2 rounded-full {% if path.status == 'active' %}bg-[#006C49]{% else %}bg-[#885500]{% endif %}"></span>
+              <span class="text-sm js-field-status-label">{{ path.status|title }}</span>
+            </span>
+          </div>
+          <div class="col-span-6 md:col-span-2 flex items-center justify-end gap-2">
+            <button type="button" class="p-1 text-[#777587] hover:text-[#3525CD] transition-colors cursor-pointer" onclick="toggleEdit({{ path.id }})" title="Edit">
+              <i data-lucide="pencil" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="hidden flex-col gap-4 p-6 bg-[#F0F3FF]" id="edit-{{ path.id }}">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Pathway Name</label>
+              <input type="text" class="js-input-name w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm" value="{{ path.name }}">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Category</label>
+              <input type="text" class="js-input-category w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm" value="{{ path.category }}">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Core Skills (comma-separated)</label>
+              <input type="text" class="js-input-skills w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm" value="{{ path.skills|join:', ' }}">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Status</label>
+              <select class="js-input-status w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm cursor-pointer">
+                <option value="active" {% if path.status == 'active' %}selected{% endif %}>Active</option>
+                <option value="draft" {% if path.status == 'draft' %}selected{% endif %}>Draft</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end gap-4 mt-1">
+            <button type="button" class="px-4 py-2 text-[#464555] text-sm hover:bg-[#D8E3FB] rounded transition-colors cursor-pointer" onclick="toggleEdit({{ path.id }})">Cancel</button>
+            <button type="button" class="px-4 py-2 bg-[#3525CD] text-white text-sm rounded shadow-sm hover:bg-[#4F46E5] transition-colors flex items-center gap-2 cursor-pointer" onclick="saveEdit({{ path.id }})">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <p id="no-results" class="hidden p-6 text-sm text-[#777587] text-center">No pathways match your search.</p>
+  </div>
+</div>
+
+<!-- Blank row template, cloned by "Add New Path" -->
+<template id="new-row-template">
+  <div class="taxonomy-row border-b border-[#D8E3FB] last:border-b-0 p-4 md:p-0" data-status="active" data-search="">
+    <div class="hidden flex-col gap-4 p-6 bg-[#F0F3FF]" id="edit-__ID__">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Pathway Name</label>
+          <input type="text" class="js-input-name w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm" placeholder="e.g. Cloud Engineer">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Category</label>
+          <input type="text" class="js-input-category w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm" placeholder="e.g. Infrastructure">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Core Skills (comma-separated)</label>
+          <input type="text" class="js-input-skills w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm" placeholder="e.g. AWS, Terraform, Linux">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] mb-1">Status</label>
+          <select class="js-input-status w-full px-3 py-2 bg-white border border-[#C7C4D8] rounded focus:ring-2 focus:ring-[#3525CD] focus:border-[#3525CD] text-sm cursor-pointer">
+            <option value="active" selected>Active</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex justify-end gap-4 mt-1">
+        <button type="button" class="js-cancel-new px-4 py-2 text-[#464555] text-sm hover:bg-[#D8E3FB] rounded transition-colors cursor-pointer">Cancel</button>
+        <button type="button" class="js-save-new px-4 py-2 bg-[#3525CD] text-white text-sm rounded shadow-sm hover:bg-[#4F46E5] transition-colors flex items-center gap-2 cursor-pointer">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Save Changes
+        </button>
+      </div>
+    </div>
+
+    <div class="md:grid grid-cols-12 gap-4 md:p-6 items-center" id="view-__ID__">
+      <div class="col-span-12 md:col-span-3 mb-3 md:mb-0">
+        <h3 class="text-lg font-semibold text-[#111C2D] js-field-name"></h3>
+        <p class="text-sm text-[#464555] js-field-category"></p>
+      </div>
+      <div class="col-span-12 md:col-span-5 mb-3 md:mb-0 flex flex-wrap gap-2 js-field-skills"></div>
+      <div class="col-span-6 md:col-span-2 flex items-center md:justify-center">
+        <span class="js-field-status-badge flex items-center gap-1.5 text-[#006C49]">
+          <span class="w-2 h-2 rounded-full bg-[#006C49]"></span>
+          <span class="text-sm js-field-status-label">Active</span>
+        </span>
+      </div>
+      <div class="col-span-6 md:col-span-2 flex items-center justify-end gap-2">
+        <button type="button" class="p-1 text-[#777587] hover:text-[#3525CD] transition-colors cursor-pointer" title="Edit">
+          <i data-lucide="pencil" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Toast confirmation -->
+<div id="toast" class="fixed bottom-6 right-6 bg-[#263143] text-[#ECF1FF] px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 translate-y-20 opacity-0 pointer-events-none transition-all duration-300 z-50">
+  <i data-lucide="check-circle" class="w-5 h-5 text-[#4EDEA3]"></i>
+  <span id="toast-message" class="text-sm">Changes saved successfully.</span>
+</div>
+
+<script>
+  const TAXONOMY_SAVE_URL = "{% url 'admin_panel:taxonomy_save' %}";
+  const CSRF_TOKEN = "{{ csrf_token }}";
+
+  function toggleEdit(id) {
+    const viewState = document.getElementById(`view-${id}`);
+    const editState = document.getElementById(`edit-${id}`);
+    const showEdit = editState.classList.contains('hidden');
+
+    viewState.classList.toggle('hidden', showEdit);
+    editState.classList.toggle('hidden', !showEdit);
+    editState.classList.toggle('flex', showEdit);
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-message').textContent = message;
+    toast.classList.remove('translate-y-20', 'opacity-0');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => {
+      toast.classList.add('translate-y-20', 'opacity-0');
+    }, 3000);
+  }
+
+  function renderViewState(row, data) {
+    row.dataset.status = data.status;
+    row.dataset.search = `${data.name} ${data.category} ${data.skills.join(' ')}`.toLowerCase();
+
+    row.querySelector('.js-field-name').textContent = data.name;
+    row.querySelector('.js-field-category').textContent = data.category;
+
+    const skillsEl = row.querySelector('.js-field-skills');
+    skillsEl.innerHTML = '';
+    data.skills.slice(0, 3).forEach(skill => {
+      const chip = document.createElement('span');
+      chip.className = 'bg-[#3525CD]/10 text-[#3525CD] px-3 py-1 rounded-full text-sm whitespace-nowrap';
+      chip.textContent = skill;
+      skillsEl.appendChild(chip);
+    });
+    if (data.skills.length > 3) {
+      const more = document.createElement('span');
+      more.className = 'bg-[#E7EEFF] text-[#464555] px-3 py-1 rounded-full text-sm whitespace-nowrap';
+      more.textContent = `+${data.skills.length - 3} more`;
+      skillsEl.appendChild(more);
+    }
+
+    const isActive = data.status === 'active';
+    const badge = row.querySelector('.js-field-status-badge');
+    badge.className = `js-field-status-badge flex items-center gap-1.5 ${isActive ? 'text-[#006C49]' : 'text-[#885500]'}`;
+    badge.querySelector('span:first-child').className = `w-2 h-2 rounded-full ${isActive ? 'bg-[#006C49]' : 'bg-[#885500]'}`;
+    row.querySelector('.js-field-status-label').textContent = isActive ? 'Active' : 'Draft';
+  }
+
+  async function submitPath(editState, existingId) {
+    const body = new URLSearchParams({
+      id: existingId || '',
+      name: editState.querySelector('.js-input-name').value.trim(),
+      category: editState.querySelector('.js-input-category').value.trim(),
+      skills: editState.querySelector('.js-input-skills').value.trim(),
+      status: editState.querySelector('.js-input-status').value,
+    });
+
+    const response = await fetch(TAXONOMY_SAVE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': CSRF_TOKEN,
+      },
+      body,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Could not save changes.');
+    }
+    return response.json();
+  }
+
+  function saveEdit(id) {
+    const editState = document.getElementById(`edit-${id}`);
+    submitPath(editState, id)
+      .then(data => {
+        renderViewState(document.getElementById(`row-${id}`), data);
+        toggleEdit(id);
+        showToast('Changes saved successfully.');
+      })
+      .catch(err => showToast(err.message));
+  }
+
+  let nextNewId = 0;
+
+  document.getElementById('add-path-btn').addEventListener('click', () => {
+    nextNewId += 1;
+    const localId = `new-${nextNewId}`;
+    const template = document.getElementById('new-row-template');
+    const fragment = template.content.cloneNode(true);
+    const rowEl = fragment.querySelector('.taxonomy-row');
+
+    fragment.querySelectorAll('[id]').forEach(el => {
+      el.id = el.id.replace('__ID__', localId);
+    });
+
+    const rowsContainer = document.getElementById('taxonomy-rows');
+    rowsContainer.insertBefore(fragment, rowsContainer.firstChild);
+    const insertedRow = rowsContainer.firstElementChild;
+
+    const editState = insertedRow.querySelector(`#edit-${localId}`);
+    editState.classList.remove('hidden');
+    editState.classList.add('flex');
+    if (window.lucide) lucide.createIcons();
+    editState.querySelector('.js-input-name').focus();
+
+    editState.querySelector('.js-cancel-new').addEventListener('click', () => insertedRow.remove());
+    editState.querySelector('.js-save-new').addEventListener('click', () => {
+      submitPath(editState, null)
+        .then(data => {
+          insertedRow.id = `row-${data.id}`;
+          const editEl = insertedRow.querySelector(`#edit-${localId}`);
+          const viewEl = insertedRow.querySelector(`#view-${localId}`);
+          editEl.id = `edit-${data.id}`;
+          viewEl.id = `view-${data.id}`;
+          viewEl.querySelector('button[title="Edit"]').setAttribute('onclick', `toggleEdit(${data.id})`);
+
+          renderViewState(insertedRow, data);
+          editEl.classList.add('hidden');
+          editEl.classList.remove('flex');
+          viewEl.classList.remove('hidden');
+          viewEl.classList.add('md:grid');
+          showToast('Path added successfully.');
+        })
+        .catch(err => showToast(err.message));
+    });
+  });
+
+  document.getElementById('filter-btn').addEventListener('click', () => {
+    document.getElementById('filter-menu').classList.toggle('hidden');
+  });
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('filter-menu');
+    if (!menu.contains(e.target) && e.target.id !== 'filter-btn' && !menu.classList.contains('hidden')) {
+      menu.classList.add('hidden');
+    }
+  });
+
+  let activeStatusFilter = 'all';
+  function applyFilters() {
+    const query = document.getElementById('taxonomy-search').value.trim().toLowerCase();
+    const rows = document.querySelectorAll('#taxonomy-rows .taxonomy-row');
+    let visibleCount = 0;
+    rows.forEach(row => {
+      const matchesQuery = !query || row.dataset.search.includes(query);
+      const matchesStatus = activeStatusFilter === 'all' || row.dataset.status === activeStatusFilter;
+      const visible = matchesQuery && matchesStatus;
+      row.classList.toggle('hidden', !visible);
+      if (visible) visibleCount += 1;
+    });
+    document.getElementById('no-results').classList.toggle('hidden', visibleCount !== 0);
+  }
+
+  document.getElementById('taxonomy-search').addEventListener('input', applyFilters);
+  document.querySelectorAll('.filter-option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeStatusFilter = btn.dataset.status;
+      document.getElementById('filter-menu').classList.add('hidden');
+      applyFilters();
+    });
+  });
+</script>
+{% endblock %}

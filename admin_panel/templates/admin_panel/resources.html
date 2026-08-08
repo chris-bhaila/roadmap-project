@@ -1,0 +1,204 @@
+{% extends "base_admin.html" %}
+{% comment %}
+Source: Stitch "Resource Library (Admin)" screen (same project/design system
+as taxonomy.html). Colors/spacing/type matched DESIGN.md exactly. Same
+`rounded-xl` → 12px drift found and corrected to the framework default
+`rounded-2xl` (16px), per DESIGN.md's card-radius spec — see taxonomy.html
+for the fuller explanation, not repeated here.
+
+Icons swapped from Material Symbols to Lucide, matching the rest of the app.
+
+The source screen's own table only had a single "Category" tag per resource;
+a "Skills Covered" chip list was added per-row since the task calls for
+resources to be mapped to skills specifically, not just a broad category.
+
+Edit/Delete buttons are present for visual fidelity to the source screen but
+intentionally inert (the Stitch mock itself wires no behavior to them) — the
+task only asked for search and category filtering, not resource CRUD.
+{% endcomment %}
+
+{% block title %}{{ page_title }} — Internship Readiness Platform{% endblock %}
+
+{% block content %}
+<div id="resources-root">
+
+  <header class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-[32px] leading-[40px] tracking-[-0.02em] font-bold text-[#111C2D]">Resource Library</h1>
+      <p class="text-base text-[#464555] mt-1">Manage learning resources, courses, and materials.</p>
+    </div>
+    <button type="button" class="bg-[#3525CD] hover:bg-[#4F46E5] text-white text-sm font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 shrink-0 cursor-pointer">
+      <i data-lucide="plus" class="w-5 h-5"></i>
+      Add Resource
+    </button>
+  </header>
+
+  <div class="bg-white rounded-2xl p-4 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] mb-6 border border-[#C7C4D8]/30 flex flex-col md:flex-row gap-4 items-center">
+    <div class="relative flex-1 w-full">
+      <i data-lucide="search" class="w-5 h-5 text-[#777587] absolute left-3 top-1/2 -translate-y-1/2"></i>
+      <input type="text" id="resource-search" placeholder="Search resources or skills..."
+             class="w-full bg-[#F9F9FF] pl-10 pr-4 py-2.5 rounded-lg border border-[#C7C4D8] focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 focus:outline-none transition-all text-sm text-[#111C2D]">
+    </div>
+    <div class="relative w-full md:w-64 shrink-0">
+      <i data-lucide="list-filter" class="w-5 h-5 text-[#777587] absolute left-3 top-1/2 -translate-y-1/2"></i>
+      <select id="category-filter" class="w-full bg-[#F9F9FF] pl-10 pr-10 py-2.5 rounded-lg border border-[#C7C4D8] focus:border-[#3525CD] focus:ring-2 focus:ring-[#3525CD]/20 focus:outline-none transition-all text-sm text-[#111C2D] appearance-none cursor-pointer">
+        <option value="">All Categories</option>
+        {% for category in categories %}
+        <option value="{{ category|lower }}">{{ category }}</option>
+        {% endfor %}
+      </select>
+      <i data-lucide="chevron-down" class="w-4 h-4 text-[#777587] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#C7C4D8]/30 overflow-hidden">
+
+    <!-- Desktop table -->
+    <div class="hidden md:block w-full overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-[#C7C4D8]/40 bg-[#F0F3FF]">
+            <th class="py-3 px-6 text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] w-[36%]">Resource Name</th>
+            <th class="py-3 px-6 text-xs font-semibold tracking-[0.05em] uppercase text-[#464555]">Category</th>
+            <th class="py-3 px-6 text-xs font-semibold tracking-[0.05em] uppercase text-[#464555]">Skills Covered</th>
+            <th class="py-3 px-6 text-xs font-semibold tracking-[0.05em] uppercase text-[#464555]">Provider</th>
+            <th class="py-3 px-6 text-xs font-semibold tracking-[0.05em] uppercase text-[#464555] text-right w-24">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="resource-tbody" class="divide-y divide-[#C7C4D8]/20 text-sm text-[#111C2D]">
+          {% for resource in resources %}
+          <tr class="resource-row hover:bg-[#F0F3FF]/60 transition-colors"
+              data-id="{{ resource.id }}" data-category="{{ resource.category|lower }}"
+              data-search="{{ resource.name|lower }} {{ resource.description|lower }} {{ resource.provider|lower }} {{ resource.skills|join:' '|lower }}">
+            <td class="py-4 px-6">
+              <div class="font-semibold text-[#111C2D] mb-1">{{ resource.name }}</div>
+              <div class="text-[#464555] text-sm">{{ resource.description }}</div>
+            </td>
+            <td class="py-4 px-6">
+              <span class="bg-[#3525CD]/10 text-[#4F46E5] px-2 py-1 rounded text-xs font-semibold">{{ resource.category }}</span>
+            </td>
+            <td class="py-4 px-6">
+              <div class="flex flex-wrap gap-1.5">
+                {% for skill in resource.skills %}
+                <span class="bg-[#E7EEFF] text-[#464555] px-2 py-1 rounded-full text-xs whitespace-nowrap">{{ skill }}</span>
+                {% endfor %}
+              </div>
+            </td>
+            <td class="py-4 px-6 text-[#464555]">{{ resource.provider }}</td>
+            <td class="py-4 px-6 text-right whitespace-nowrap">
+              <button type="button" class="text-[#777587] hover:text-[#3525CD] transition-colors p-1 cursor-pointer" title="Edit">
+                <i data-lucide="pencil" class="w-[18px] h-[18px]"></i>
+              </button>
+              <button type="button" class="text-[#777587] hover:text-[#BA1A1A] transition-colors p-1 cursor-pointer" title="Delete">
+                <i data-lucide="trash-2" class="w-[18px] h-[18px]"></i>
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile cards -->
+    <div id="resource-cards" class="md:hidden flex flex-col divide-y divide-[#C7C4D8]/30">
+      {% for resource in resources %}
+      <div class="resource-row p-4 hover:bg-[#F0F3FF]/60 transition-colors"
+           data-id="{{ resource.id }}" data-category="{{ resource.category|lower }}"
+           data-search="{{ resource.name|lower }} {{ resource.description|lower }} {{ resource.provider|lower }} {{ resource.skills|join:' '|lower }}">
+        <div class="flex justify-between items-start mb-2">
+          <div class="font-semibold text-[#111C2D]">{{ resource.name }}</div>
+          <div class="flex gap-1 shrink-0">
+            <button type="button" class="text-[#777587] hover:text-[#3525CD] transition-colors cursor-pointer" title="Edit">
+              <i data-lucide="pencil" class="w-[18px] h-[18px]"></i>
+            </button>
+            <button type="button" class="text-[#777587] hover:text-[#BA1A1A] transition-colors cursor-pointer" title="Delete">
+              <i data-lucide="trash-2" class="w-[18px] h-[18px]"></i>
+            </button>
+          </div>
+        </div>
+        <div class="text-[#464555] text-sm mb-2">{{ resource.description }}</div>
+        <div class="flex flex-wrap gap-1.5 mb-2">
+          {% for skill in resource.skills %}
+          <span class="bg-[#E7EEFF] text-[#464555] px-2 py-1 rounded-full text-xs whitespace-nowrap">{{ skill }}</span>
+          {% endfor %}
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="bg-[#3525CD]/10 text-[#4F46E5] px-2 py-1 rounded text-xs font-semibold">{{ resource.category }}</span>
+          <span class="text-[#464555] text-sm">{{ resource.provider }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <p id="no-results" class="hidden p-6 text-sm text-[#777587] text-center">No resources match your search.</p>
+
+    <div id="pagination-bar" class="border-t border-[#C7C4D8]/30 p-4 flex items-center justify-between bg-white">
+      <span id="pagination-summary" class="text-sm text-[#464555]"></span>
+      <div class="flex gap-2">
+        <button type="button" id="prev-page" class="p-1.5 border border-[#C7C4D8] rounded text-[#777587] hover:bg-[#F0F3FF] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <button type="button" id="next-page" class="p-1.5 border border-[#C7C4D8] rounded text-[#777587] hover:bg-[#F0F3FF] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const PAGE_SIZE = 6;
+    let currentPage = 1;
+
+    const searchInput = document.getElementById('resource-search');
+    const categoryFilter = document.getElementById('category-filter');
+    const noResults = document.getElementById('no-results');
+    const paginationBar = document.getElementById('pagination-bar');
+    const summary = document.getElementById('pagination-summary');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+
+    function getMatchingIds() {
+      const query = searchInput.value.trim().toLowerCase();
+      const category = categoryFilter.value;
+      const ids = [];
+      document.querySelectorAll('#resource-tbody .resource-row').forEach(row => {
+        const matchesQuery = !query || row.dataset.search.includes(query);
+        const matchesCategory = !category || row.dataset.category === category;
+        if (matchesQuery && matchesCategory) ids.push(row.dataset.id);
+      });
+      return ids;
+    }
+
+    function render() {
+      const matchingIds = getMatchingIds();
+      const totalPages = Math.max(1, Math.ceil(matchingIds.length / PAGE_SIZE));
+      currentPage = Math.min(currentPage, totalPages);
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const visibleIds = new Set(matchingIds.slice(start, start + PAGE_SIZE));
+
+      document.querySelectorAll('.resource-row').forEach(row => {
+        row.classList.toggle('hidden', !visibleIds.has(row.dataset.id));
+      });
+
+      noResults.classList.toggle('hidden', matchingIds.length !== 0);
+      paginationBar.classList.toggle('hidden', matchingIds.length === 0);
+
+      if (matchingIds.length > 0) {
+        const rangeEnd = Math.min(start + PAGE_SIZE, matchingIds.length);
+        summary.textContent = `Showing ${start + 1} to ${rangeEnd} of ${matchingIds.length} resources`;
+      }
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+    }
+
+    searchInput.addEventListener('input', () => { currentPage = 1; render(); });
+    categoryFilter.addEventListener('change', () => { currentPage = 1; render(); });
+    prevBtn.addEventListener('click', () => { currentPage -= 1; render(); });
+    nextBtn.addEventListener('click', () => { currentPage += 1; render(); });
+
+    render();
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends "base_admin.html" %}
+{% comment %}
+Source: Stitch "Student Trends (Admin)" screen (same project/design system as
+the other admin_panel screens). Colors/spacing/type matched DESIGN.md
+exactly; same `rounded-xl` → 16px drift correction as the other admin pages.
+Icons swapped from Material Symbols to Lucide.
+
+The source screen has 4 metric cards (adds an "Est. Placement Rate" card)
+plus an "Export Report" button and a cohort-select dropdown — trimmed to the
+3 cards actually requested (total students, most common path, avg.
+compatibility) and dropped the export/cohort controls since neither would be
+wired to anything real.
+
+The count-up animation intentionally does NOT reuse the Stitch mock's own
+inline script (a simpler animateValue helper). Per the task, it mirrors
+roadmap/results.html's animation exactly instead: a closure-based
+requestAnimationFrame tick, the same easeOutQuad curve, staggered per-card
+reveal via setTimeout, and a prefers-reduced-motion short-circuit — so the
+motion feels identical between the two screens.
+{% endcomment %}
+
+{% block title %}{{ page_title }} — Internship Readiness Platform{% endblock %}
+
+{% block extra_head %}
+<style>
+  .an-nums { font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) {
+    .an-page * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  }
+  @keyframes an-grow-bar {
+    from { height: 0; }
+    to { height: var(--target-height); }
+  }
+  .an-bar-fill {
+    animation: an-grow-bar 800ms ease-out forwards;
+    transform-origin: bottom;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="an-page">
+
+  <header class="mb-8">
+    <h1 class="text-[32px] leading-[40px] tracking-[-0.02em] font-bold text-[#111C2D]">Student Analytics</h1>
+    <p class="text-base text-[#464555] mt-1">Monitor cohort performance and readiness metrics across all pathways.</p>
+  </header>
+
+  <!-- Metric cards -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#C7C4D8]/30 relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-sm font-medium text-[#464555]">Total Active Students</p>
+        <div class="w-8 h-8 rounded-full bg-[#3525CD]/10 flex items-center justify-center text-[#3525CD] shrink-0">
+          <i data-lucide="users" class="w-[18px] h-[18px]"></i>
+        </div>
+      </div>
+      <h3 class="an-nums text-[32px] leading-[40px] tracking-[-0.02em] font-bold text-[#111C2D] an-metric" data-target="{{ summary.total_students }}">0</h3>
+      <p class="text-sm text-[#464555] mt-2">Across all active cohorts</p>
+      <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-[#3525CD]/5 rounded-full blur-2xl"></div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#C7C4D8]/30 relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-sm font-medium text-[#464555]">Most Common Recommended Path</p>
+        <div class="w-8 h-8 rounded-full bg-[#885500]/10 flex items-center justify-center text-[#885500] shrink-0">
+          <i data-lucide="route" class="w-[18px] h-[18px]"></i>
+        </div>
+      </div>
+      <h3 class="text-xl leading-[28px] font-semibold text-[#111C2D] truncate">{{ summary.most_common_path }}</h3>
+      <p class="text-sm text-[#464555] mt-2">
+        <span class="an-nums font-medium text-[#111C2D] an-metric" data-target="{{ summary.most_common_path_percent }}">0</span>% of cohort
+      </p>
+      <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-[#885500]/5 rounded-full blur-2xl"></div>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#C7C4D8]/30 relative overflow-hidden">
+      <div class="flex justify-between items-start mb-4">
+        <p class="text-sm font-medium text-[#464555]">Avg. Compatibility Score</p>
+        <div class="w-8 h-8 rounded-full bg-[#006C49]/10 flex items-center justify-center text-[#006C49] shrink-0">
+          <i data-lucide="radar" class="w-[18px] h-[18px]"></i>
+        </div>
+      </div>
+      <h3 class="an-nums text-[32px] leading-[40px] tracking-[-0.02em] font-bold text-[#111C2D]">
+        <span class="an-metric" data-target="{{ summary.avg_compatibility }}">0</span>%
+      </h3>
+      <div class="mt-3 w-full bg-[#E7EEFF] rounded-full h-1.5 overflow-hidden">
+        <div class="an-compat-bar bg-[#006C49] h-full rounded-full w-0 transition-all duration-[1500ms] ease-out" data-target-width="{{ summary.avg_compatibility }}"></div>
+      </div>
+      <div class="absolute -right-6 -bottom-6 w-24 h-24 bg-[#006C49]/5 rounded-full blur-2xl"></div>
+    </div>
+  </section>
+
+  <!-- Trend chart -->
+  <section class="bg-white rounded-2xl p-6 md:p-8 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] border border-[#C7C4D8]/30">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      <div>
+        <h2 class="text-xl font-semibold text-[#111C2D]">Aggregate Readiness Velocity</h2>
+        <p class="text-sm text-[#464555] mt-1">Average cohort readiness score over time.</p>
+      </div>
+      <div id="range-toggle" class="flex bg-[#E7EEFF] rounded-lg p-1">
+        <button type="button" data-range="3m" class="range-btn px-4 py-1.5 rounded-md text-sm font-medium text-[#464555] hover:text-[#111C2D] transition-colors cursor-pointer">3M</button>
+        <button type="button" data-range="6m" class="range-btn px-4 py-1.5 rounded-md text-sm font-medium bg-white shadow-sm text-[#3525CD] cursor-pointer">6M</button>
+        <button type="button" data-range="1y" class="range-btn px-4 py-1.5 rounded-md text-sm font-medium text-[#464555] hover:text-[#111C2D] transition-colors cursor-pointer">1Y</button>
+      </div>
+    </div>
+
+    <div class="relative h-64 w-full flex items-end gap-2 md:gap-4">
+      <!-- Y-axis labels -->
+      <div class="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-[#464555] text-xs opacity-60 w-8">
+        <span>100%</span>
+        <span>75%</span>
+        <span>50%</span>
+        <span>25%</span>
+        <span>0%</span>
+      </div>
+      <!-- Grid lines -->
+      <div class="absolute inset-0 left-10 right-0 bottom-8 border-b border-[#C7C4D8]/30">
+        <div class="absolute w-full border-t border-dashed border-[#C7C4D8]/40 top-0"></div>
+        <div class="absolute w-full border-t border-dashed border-[#C7C4D8]/40 top-1/4"></div>
+        <div class="absolute w-full border-t border-dashed border-[#C7C4D8]/40 top-2/4"></div>
+        <div class="absolute w-full border-t border-dashed border-[#C7C4D8]/40 top-3/4"></div>
+      </div>
+      <div id="chart-bars" class="relative z-10 w-full flex justify-between items-end h-56 ml-10"></div>
+    </div>
+
+    <div class="mt-6 pt-4 border-t border-[#C7C4D8]/30 flex items-center gap-2 text-sm">
+      <div class="w-3 h-3 bg-[#3525CD] rounded-sm"></div>
+      <span class="text-[#464555]">Average Cohort Readiness</span>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="trend-data" type="application/json">{{ trend_json|safe }}</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Count-up: identical pattern to roadmap/results.html (tick + easeOutQuad,
+  // staggered reveal, prefers-reduced-motion short-circuit).
+  const metrics = document.querySelectorAll('.an-metric');
+  metrics.forEach((el, i) => {
+    const target = parseInt(el.dataset.target, 10);
+    const revealDelay = reduceMotion ? 0 : i * 100;
+
+    setTimeout(() => {
+      const duration = reduceMotion ? 0 : 1200;
+      const start = performance.now();
+
+      function tick(now) {
+        const progress = duration === 0 ? 1 : Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 2);
+        const currentValue = Math.round(eased * target);
+        el.textContent = currentValue.toLocaleString();
+        if (progress < 1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }, revealDelay);
+  });
+
+  setTimeout(() => {
+    document.querySelectorAll('.an-compat-bar').forEach(bar => {
+      bar.style.width = bar.dataset.targetWidth + '%';
+    });
+  }, reduceMotion ? 0 : 100);
+
+  // Trend chart: rebuilds bars for the selected range from server data.
+  const trendData = JSON.parse(document.getElementById('trend-data').textContent);
+  const barsContainer = document.getElementById('chart-bars');
+
+  function renderChart(rangeKey) {
+    const points = trendData[rangeKey];
+    barsContainer.innerHTML = '';
+    points.forEach((point, i) => {
+      const column = document.createElement('div');
+      column.className = 'flex-1 h-full flex flex-col items-center group';
+
+      const track = document.createElement('div');
+      track.className = 'flex-1 w-full max-w-[40px] mx-auto bg-[#E7EEFF] rounded-t-sm relative flex items-end justify-center overflow-hidden';
+
+      const fill = document.createElement('div');
+      const isLast = i === points.length - 1;
+      fill.className = `w-full an-bar-fill rounded-t-sm ${isLast ? 'bg-[#3525CD]' : 'bg-[#3525CD]/70'} group-hover:bg-[#3525CD] transition-colors`;
+      fill.style.setProperty('--target-height', point.value + '%');
+      if (!reduceMotion) fill.style.animationDelay = `${i * 80}ms`;
+
+      const label = document.createElement('span');
+      label.className = `mt-2 text-xs ${isLast ? 'font-semibold text-[#3525CD]' : 'text-[#464555]'}`;
+      label.textContent = point.label;
+
+      track.appendChild(fill);
+      column.appendChild(track);
+      column.appendChild(label);
+      barsContainer.appendChild(column);
+    });
+  }
+
+  document.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.range-btn').forEach(b => {
+        b.classList.remove('bg-white', 'shadow-sm', 'text-[#3525CD]');
+        b.classList.add('text-[#464555]');
+      });
+      btn.classList.add('bg-white', 'shadow-sm', 'text-[#3525CD]');
+      btn.classList.remove('text-[#464555]');
+      renderChart(btn.dataset.range);
+    });
+  });
+
+  renderChart('6m');
+});
+</script>
+{% endblock %}

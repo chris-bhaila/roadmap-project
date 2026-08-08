@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% comment %}
+Admin panel chrome: desktop left sidebar (full viewport height, "Admin Portal"
+brand) mirroring the pattern established in base_app.html for the student
+side of the app. base.html's "navbar"/"messages"/"main"/"footer" blocks are
+independent siblings, so all four are overridden here (see base_app.html for
+the full rationale) rather than relying on any single override to remove the
+inherited top bar.
+
+Sourced from the Stitch "Path Management (Admin)" screen. One drift from that
+screen was corrected: its local Tailwind config mapped `rounded-xl` to 12px,
+but DESIGN.md specifies 16px (1rem) for cards/large containers, so content
+using that radius uses Tailwind's default `rounded-2xl` (16px) instead.
+{% endcomment %}
+
+{% block navbar %}{% endblock %}
+{% block messages %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block main %}
+{% url 'admin_panel:dashboard' as url_overview %}
+{% url 'admin_panel:taxonomy' as url_taxonomy %}
+{% url 'admin_panel:resources' as url_resources %}
+{% url 'admin_panel:analytics' as url_analytics %}
+{% with view_name=request.resolver_match.view_name %}
+
+<!-- Desktop sidebar: fixed, full viewport height. Breakpoint is `lg` (not
+     `md`, as on the student sidebar) to match the Stitch source screen. -->
+<nav class="hidden lg:flex flex-col w-64 shrink-0 fixed inset-y-0 left-0 py-6 px-4 border-r border-[#C7C4D8]/50 bg-[#F0F3FF] overflow-y-auto z-30">
+
+  <div class="flex items-center gap-4 mb-8 px-2">
+    <div class="w-12 h-12 rounded-full bg-[#E2DFFF] border-2 border-[#3525CD] flex items-center justify-center shrink-0">
+      <i data-lucide="user-cog" class="w-6 h-6 text-[#3525CD]"></i>
+    </div>
+    <div class="min-w-0">
+      <div class="text-sm font-bold leading-tight text-[#3525CD]">Admin Portal</div>
+      <div class="text-xs text-[#464555] mt-0.5">CS Readiness Lead</div>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <a href="{{ url_overview }}" class="admin-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'admin_panel:dashboard' %}bg-white text-[#3525CD] font-semibold border-r-4 border-[#3525CD]{% else %}text-[#464555] hover:bg-white/60{% endif %}">
+      <i data-lucide="bar-chart-3" class="w-5 h-5 shrink-0"></i>
+      Overview
+    </a>
+    <a href="{{ url_analytics }}" class="admin-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'admin_panel:analytics' %}bg-white text-[#3525CD] font-semibold border-r-4 border-[#3525CD]{% else %}text-[#464555] hover:bg-white/60{% endif %}">
+      <i data-lucide="users" class="w-5 h-5 shrink-0"></i>
+      Student Trends
+    </a>
+    <a href="{{ url_taxonomy }}" class="admin-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'admin_panel:taxonomy' %}bg-white text-[#3525CD] font-semibold border-r-4 border-[#3525CD]{% else %}text-[#464555] hover:bg-white/60{% endif %}">
+      <i data-lucide="route" class="w-5 h-5 shrink-0"></i>
+      Path Management
+    </a>
+    <a href="{{ url_resources }}" class="admin-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer {% if view_name == 'admin_panel:resources' %}bg-white text-[#3525CD] font-semibold border-r-4 border-[#3525CD]{% else %}text-[#464555] hover:bg-white/60{% endif %}">
+      <i data-lucide="book-open" class="w-5 h-5 shrink-0"></i>
+      Resource Library
+    </a>
+    <a href="#" class="admin-nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer text-[#464555] hover:bg-white/60">
+      <i data-lucide="settings" class="w-5 h-5 shrink-0"></i>
+      Settings
+    </a>
+  </div>
+</nav>
+
+<!-- Mobile/tablet top bar: below `lg`, the fixed sidebar is hidden in favor
+     of a slim scrollable bar (same fallback pattern base.html's original
+     navbar used for a wide link set). -->
+<nav class="lg:hidden sticky top-0 z-30 bg-[#F0F3FF] border-b border-[#C7C4D8]/50">
+  <div class="flex items-center gap-2 px-4 h-14 overflow-x-auto">
+    <span class="text-sm font-bold text-[#3525CD] shrink-0 mr-2">Admin Portal</span>
+    <a href="{{ url_overview }}" class="admin-nav-link flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 cursor-pointer {% if view_name == 'admin_panel:dashboard' %}bg-white text-[#3525CD] font-semibold{% else %}text-[#464555]{% endif %}">
+      <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Overview
+    </a>
+    <a href="{{ url_analytics }}" class="admin-nav-link flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 cursor-pointer {% if view_name == 'admin_panel:analytics' %}bg-white text-[#3525CD] font-semibold{% else %}text-[#464555]{% endif %}">
+      <i data-lucide="users" class="w-4 h-4"></i> Trends
+    </a>
+    <a href="{{ url_taxonomy }}" class="admin-nav-link flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 cursor-pointer {% if view_name == 'admin_panel:taxonomy' %}bg-white text-[#3525CD] font-semibold{% else %}text-[#464555]{% endif %}">
+      <i data-lucide="route" class="w-4 h-4"></i> Paths
+    </a>
+    <a href="{{ url_resources }}" class="admin-nav-link flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 cursor-pointer {% if view_name == 'admin_panel:resources' %}bg-white text-[#3525CD] font-semibold{% else %}text-[#464555]{% endif %}">
+      <i data-lucide="book-open" class="w-4 h-4"></i> Library
+    </a>
+    <a href="#" class="admin-nav-link flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 cursor-pointer text-[#464555]">
+      <i data-lucide="settings" class="w-4 h-4"></i> Settings
+    </a>
+  </div>
+</nav>
+
+<!-- Content column: messages + page content + footer, offset to clear the
+     sidebar on desktop (`lg`). A direct sibling of the sidebar. -->
+<div class="lg:pl-64 flex-1 flex flex-col min-h-screen w-full">
+
+  {% if messages %}
+  <div class="max-w-[1200px] w-full mx-auto px-4 md:px-8 pt-4">
+    {% include "_messages_content.html" %}
+  </div>
+  {% endif %}
+
+  <main class="flex-1 max-w-[1200px] w-full mx-auto px-4 py-6 md:p-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-200 bg-white">
+    <div class="max-w-[1200px] mx-auto px-4 py-6 text-sm text-slate-500">
+      {% include "_footer_content.html" %}
+    </div>
+  </footer>
+</div>
+
+{% endwith %}
+
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+  });
+</script>
+{% endblock %}

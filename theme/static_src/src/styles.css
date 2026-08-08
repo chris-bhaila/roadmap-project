@@ -10,3 +10,4 @@
 @source "../../../predictions/**/*.{html,py}";
 @source "../../../roadmap/**/*.{html,py}";
 @source "../../../progress/**/*.{html,py}";
+@source "../../../admin_panel/**/*.{html,py}";
