@@ -31,4 +31,4 @@ theme/static/css/dist/
 *.swp
 .DS_Store
 /.claude
-/train_model/results.csv
+train_model/results.csv
