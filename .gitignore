@@ -32,3 +32,4 @@ theme/static/css/dist/
 .DS_Store
 /.claude
 train_model/results.csv
+.mcp.json
