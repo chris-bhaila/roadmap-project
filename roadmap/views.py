@@ -22,6 +22,7 @@ TOP_MATCHES = [
     {
         'rank': 1,
         'title': 'Backend developer',
+        'role_slug': 'backend-developer',
         'score': 87,
         'blurb': 'Strong in Python, SQL, and system design',
         'skills': ['Python', 'SQL', 'System Design'],
@@ -29,6 +30,7 @@ TOP_MATCHES = [
     {
         'rank': 2,
         'title': 'Data analyst',
+        'role_slug': 'data-analyst',
         'score': 79,
         'blurb': 'Good foundation in SQL and statistics',
         'skills': ['SQL', 'Statistics', 'Excel'],
@@ -36,6 +38,7 @@ TOP_MATCHES = [
     {
         'rank': 3,
         'title': 'Frontend developer',
+        'role_slug': 'frontend-developer',
         'score': 74,
         'blurb': 'Solid JavaScript, growing in React',
         'skills': ['JavaScript', 'React', 'CSS'],
@@ -43,6 +46,7 @@ TOP_MATCHES = [
     {
         'rank': 4,
         'title': 'DevOps engineer',
+        'role_slug': 'devops-engineer',
         'score': 68,
         'blurb': 'Some exposure to Linux and CI/CD',
         'skills': ['Linux', 'CI/CD', 'Docker'],
@@ -50,6 +54,7 @@ TOP_MATCHES = [
     {
         'rank': 5,
         'title': 'Mobile developer',
+        'role_slug': 'mobile-developer',
         'score': 61,
         'blurb': 'Limited experience, worth exploring',
         'skills': ['Kotlin', 'Swift', 'Git'],

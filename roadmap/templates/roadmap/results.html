@@ -36,8 +36,9 @@
 
     <div id="results-list" class="space-y-3">
       {% for match in top_matches %}
-      <div class="rp-card opacity-0 translate-y-3 bg-white rounded-2xl border border-[#777587]/50 p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] hover:shadow-[0_10px_15px_-3px_rgba(30,41,59,0.08)] hover:-translate-y-0.5 cursor-pointer"
-           data-score="{{ match.score }}" tabindex="0" role="button"
+      <a href="{% url 'predictions:path_detail' role_slug=match.role_slug %}"
+           class="rp-card opacity-0 translate-y-3 bg-white rounded-2xl border border-[#777587]/50 p-6 shadow-[0_4px_6px_-1px_rgba(30,41,59,0.05)] hover:shadow-[0_10px_15px_-3px_rgba(30,41,59,0.08)] hover:-translate-y-0.5 cursor-pointer block"
+           data-score="{{ match.score }}"
            aria-label="{{ match.title }}, {{ match.score }} percent match">
 
         <div class="flex items-start justify-between gap-4">
@@ -63,7 +64,7 @@
           </div>
         </div>
 
-      </div>
+      </a>
       {% endfor %}
     </div>
 

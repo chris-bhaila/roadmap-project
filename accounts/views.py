@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
 
 
 def login_view(request):
@@ -13,5 +14,9 @@ def logout_view(request):
     return render(request, 'placeholder.html', {'page_title': 'Logout'})
 
 
+@login_required
 def dashboard(request):
-    return render(request, 'placeholder.html', {'page_title': 'Dashboard'})
+    """LOGIN_REDIRECT_URL target: routes each role to its own home."""
+    if request.user.is_admin:
+        return redirect('admin_panel:dashboard')
+    return redirect('roadmap:results')
